@@ -15,7 +15,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
         // Password settings (customize as needed)
         options.Password.RequireDigit = true;
         options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireNonAlphanumeric = true;
     
         // Lockout settings
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);

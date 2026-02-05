@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+using MarketPlaceBackend.DTOs;
 
 namespace MarketPlaceBackend.Controllers;
 
@@ -16,6 +20,23 @@ public class AuthController : ControllerBase
     {
         _userManager = userManager;
         _signInManager = signInManager;
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            id = user.Id,
+            email = user.Email
+        });
     }
 
     [HttpPost]
@@ -54,16 +75,53 @@ public class AuthController : ControllerBase
         await _signInManager.SignOutAsync();
         return Ok(new { message = "Logged out" });
     }
-}
 
-public class RegisterRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-}
+    [HttpPatch]
+    [Authorize]
+    public async Task<IActionResult> UpdateEmail(UpdateEmailRequest request)
+    {
+        // grab current user id from auth cookie
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
 
-public class LoginRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+        // fetch user from db
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return NotFound(new { message = "User not found" });
+
+        // update property
+        user.Email = request.NewEmail;
+        user.UserName = request.NewEmail; // email is same as usr name
+
+        // Save to db
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+            return Ok(new { message = "Email updated." });
+
+        return BadRequest(result.Errors);
+    }
+
+    [HttpPatch]
+    [Authorize]
+    public async Task<IActionResult> UpdatePassword(UpdatePasswordRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+            return NotFound();
+
+        var result = await _userManager.ChangePasswordAsync(
+            user,
+            request.CurrentPassword,
+            request.NewPassword
+        );
+
+        if (result.Succeeded)
+            return Ok(new { message = "Password updated successfully" });
+
+        return BadRequest(result.Errors);
+    }
 }
