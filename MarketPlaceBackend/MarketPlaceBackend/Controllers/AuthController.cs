@@ -50,8 +50,12 @@ public class AuthController : ControllerBase
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
+        {
+            _logger.LogEvent($"User {user.Id} registered successfully with email {user.Email}");
             return Ok(new { message = "Registration successful" });
+        }
 
+        _logger.LogEvent($"Failed registration attempt for email {request.Email}");
         return BadRequest(result.Errors);
     }
 
@@ -65,18 +69,29 @@ public class AuthController : ControllerBase
             lockoutOnFailure: true);
 
         if (result.Succeeded)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            _logger.LogEvent($"User {user.Id} logged in successfully");
             return Ok(new { message = "Login successful" });
+        }
 
         if (result.IsLockedOut)
+        {
+            _logger.LogEvent($"Account lockout triggered for email {request.Email}");
             return BadRequest(new { message = "Account locked. Try again later." });
+        }
 
+        _logger.LogEvent($"Failed login attempt for email {request.Email}");
         return BadRequest(new { message = "Invalid credentials" });
     }
 
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         await _signInManager.SignOutAsync();
+
+        _logger.LogEvent($"User {userId} logged out");
         return Ok(new { message = "Logged out" });
     }
 
@@ -95,6 +110,7 @@ public class AuthController : ControllerBase
             return NotFound(new { message = "User not found" });
 
         // update property
+        var oldEmail = user.Email;
         user.Email = request.NewEmail;
         user.UserName = request.NewEmail; // email is same as usr name
 
@@ -102,8 +118,12 @@ public class AuthController : ControllerBase
         var result = await _userManager.UpdateAsync(user);
 
         if (result.Succeeded)
+        {
+            _logger.LogEvent($"User {userId} updated email from {oldEmail} to {request.NewEmail}");
             return Ok(new { message = "Email updated." });
+        }
 
+        _logger.LogEvent($"Failed email update attempt for user {userId}");
         return BadRequest(result.Errors);
     }
 
@@ -124,8 +144,12 @@ public class AuthController : ControllerBase
         );
 
         if (result.Succeeded)
+        {
+            _logger.LogEvent($"User {userId} updated their password");
             return Ok(new { message = "Password updated successfully" });
+        }
 
+        _logger.LogEvent($"Failed to update password for {userId}");
         return BadRequest(result.Errors);
     }
 }
