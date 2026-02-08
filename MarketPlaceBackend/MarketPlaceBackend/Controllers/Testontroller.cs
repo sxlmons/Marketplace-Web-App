@@ -1,16 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Hosting;
 
-namespace MarketPlaceBackend;
+namespace MarketPlaceBackend.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
 public class TestController : ControllerBase
 {
+
+    private readonly IWebHostEnvironment _env;
+
+    public TestController(IWebHostEnvironment env) { _env = env; }
+    
     [HttpGet]
     public IActionResult TestGet()
     {
-        return Ok($"Recieved Test Get Request");
+        return Ok();
     }
     
     [HttpPost]
