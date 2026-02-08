@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
 using MarketPlaceBackend.Data;
 using MarketPlaceBackend.DTOs;
 using MarketPlaceBackend.Models;
-using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Security.Claims;
 
 namespace MarketPlaceBackend.Controllers;
 
@@ -23,41 +25,56 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> CreateNewPost([FromForm] Posts PostDTO, [FromForm] List<IFormFile>? images)
+    public async Task<IActionResult> CreateNewPost([FromForm] CreatePostDTO dto, [FromForm] List<IFormFile>? images)
     {
+        // Grab userId from cookie
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         if (images.Count > 10)
             return BadRequest("Max 10 Images Allowed");
 
-        PostDTO.PhotoCount = images.Count;
-        _db.Posts.Add(PostDTO);
+        // Build the entity from the DTO + server-side data
+        var post = new Posts
+        {
+            UserId = userId,
+            Title = dto.Title,
+            Description = dto.Description,
+            PhotoCount = images?.Count ?? 0,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
 
+        _db.Posts.Add(post);
         await _db.SaveChangesAsync();
 
-        var imageDir = Path.Combine(_imageStorage, PostDTO.UserId.ToString(), PostDTO.Id.ToString());
-        Directory.CreateDirectory(imageDir);
-
-        for (int i = 0; i < images.Count; i++)
+        if (images != null && images.Count > 0)
         {
-            var file = images[i];
-            var extension = Path.GetExtension(file.FileName);
+            var imageDir = Path.Combine(_imageStorage, userId, post.Id.ToString());
+            Directory.CreateDirectory(imageDir);
 
-            var filePath = Path.Combine(imageDir, $"{i + 1}{extension}");
-            
-            await using var stream = new FileStream(
-                filePath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 81920,   
-                useAsync: true
-            );
+            for (int i = 0; i < images.Count; i++)
+            {
+                var file = images[i];
+                var extension = Path.GetExtension(file.FileName);
+                var filePath = Path.Combine(imageDir, $"{i + 1}{extension}");
 
-            await file.CopyToAsync(stream);
+                await using var stream = new FileStream(
+                    filePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    useAsync: true
+                );
+
+                await file.CopyToAsync(stream);
+            }
         }
 
-        _logger.LogEvent($"User {PostDTO.UserId} created Post {PostDTO.Id}");
-        
+        _logger.LogEvent($"User {userId} created Post {post.Id}");
+
         return Ok();
     }
     
@@ -141,17 +158,21 @@ public class PostController : ControllerBase
         
         return File(fileBytes, contentType);
     }
-
-    // needs to be authenticated 
+ 
     [HttpDelete]
+    [Authorize]
     public async Task<IActionResult> DeletePost(int postId)
     {
-        var post = await _db.Posts.FindAsync(postId);
+        // this grabs the userid of the http request
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        var post = await _db.Posts.FindAsync(postId);
         if (post == null)
             return NotFound();
-        
-        // Authenticate 
+
+        // Check ownwership
+        if (post.UserId.ToString() != userId)
+            return Forbid();
 
         _db.Posts.Remove(post);
         await _db.SaveChangesAsync();
@@ -171,12 +192,20 @@ public class PostController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async Task<IActionResult> UpdatePost(int postId, [FromForm] UpdatedPostDTO updatedPostDto, [FromForm] List<IFormFile>? images)
     {
+        // Grab userId from cookie
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var post = await _db.Posts.FindAsync(postId);
         if (post == null)
             return NotFound();
-        
+
+        // Ownership check
+        if (post.UserId != userId)
+            return Forbid();
+
         post.Title = updatedPostDto.Title;
         post.Description = updatedPostDto.Description;
         post.UpdatedAt = DateTime.UtcNow;
@@ -202,7 +231,6 @@ public class PostController : ControllerBase
             {
                 var file = images[i];
                 var extension = Path.GetExtension(file.FileName);
-
                 var filePath = Path.Combine(imageDir, $"{i + 1}{extension}");
 
                 await using var stream = new FileStream(
