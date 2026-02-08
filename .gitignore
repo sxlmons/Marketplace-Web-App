@@ -1,19 +1,198 @@
+# .NET / C# / ASP.NET Core
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+nupkg/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
 # JetBrains Rider
 .idea/
+*.sln.iml
 
-# Backend (.NET)
-MarketPlaceBackend/**/bin/
-MarketPlaceBackend/**/obj/
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
 
-# Frontend (React)
-FrontEnd/**/node_modules/
-FrontEnd/**/build/
-FrontEnd/**/dist/
+# Test Coverage
+coverage/
+*.coverage
+*.coveragexml
 
-# Secrets / env
-**/.env
-**/.env.*
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
 
+# Entity Framework
+*.edmx.diagram
+*.edmx.sql
+Migrations/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Web workbench (sass)
+.sass-cache/
+
+# Node.js / React Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# React build output
+build/
+dist/
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+*.ndf
+
+# PostgreSQL
+*.dump
+*.sql.backup
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Docker volumes data
+*_data/
+
+# Log files
+*.log
+logs/
+*.log.[0-9]*
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Publishing profiles
+*.Publish.xml
+*.pubxml
+*.publishproj
+
+# User-specific files
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+launchSettings.json
+
+# Image uploads directory (if storing images locally)
+wwwroot/uploads/
+wwwroot/images/user_*/
+
+# SSL certificates
+*.pfx
+*.p12
+*.cer
+*.crt
+*.key
+
+# Backup files
+*.bak
+*.backup
+
+# Package manager lock files (optional - some teams prefer to commit these)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# IDE - VSCode
+.history/
+
+# IDE - IntelliJ
+*.iml
+*.ipr
+*.iws
+
+# Miscellaneous
+.angular/
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
 # Mac Junk File
 **/.DS_Store
 
