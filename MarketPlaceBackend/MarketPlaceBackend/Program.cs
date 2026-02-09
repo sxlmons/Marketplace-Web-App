@@ -5,35 +5,38 @@ using MarketPlaceBackend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- Add services ---
+
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();   
-builder.Services.AddSwaggerGen();  
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
-// Adds a logger instance for each HTTP request
+// Logger
 builder.Services.AddScoped<Logger>();
 
-// Add Identity
+// Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-    {
-        // Password settings (customize as needed)
-        options.Password.RequireDigit = true;
-        options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = true;
-    
-        // Lockout settings
-        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-        options.Lockout.MaxFailedAccessAttempts = 5;
-    })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 // Configure cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SameSite = SameSiteMode.None; // <-- allow cross-site cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // must use HTTPS
     options.ExpireTimeSpan = TimeSpan.FromHours(24);
     options.Events.OnRedirectToLogin = context =>
     {
@@ -42,17 +45,37 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+// --- Enable CORS for React frontend ---
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:56987") // your React dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // allows cookies/session
+    });
+});
+
 var app = builder.Build();
+
+// --- Middleware ---
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();                        
-    app.UseSwaggerUI();                    
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+
+// Apply CORS BEFORE authentication/authorization
+app.UseCors("ReactCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

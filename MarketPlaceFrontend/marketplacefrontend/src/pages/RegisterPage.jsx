@@ -32,7 +32,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        "http://localhost:5289/api/auth/register",
         {
           method: "POST",
           credentials: "include", // allow session cookie

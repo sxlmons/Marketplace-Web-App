@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function PostDetailsPage() {
-  const { postId } = useParams();
+    const { postId } = useParams();
+    const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -19,7 +20,7 @@ export default function PostDetailsPage() {
   async function loadPost() {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/${postId}`,
+        `http://localhost:5289/api/posts/${postId}`,
         { credentials: "include" }
       );
 
@@ -35,7 +36,7 @@ export default function PostDetailsPage() {
   async function loadComments() {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `http://localhost:5289/api/posts/${postId}/comments`,
         { credentials: "include" }
       );
 
@@ -54,7 +55,7 @@ export default function PostDetailsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `http://localhost:5289/api/posts/${postId}/comments`,
         {
           method: "POST",
           credentials: "include",
@@ -75,7 +76,7 @@ export default function PostDetailsPage() {
   async function handleEditComment(commentId) {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/comments/${commentId}`,
+        `http://localhost:5289/api/comments/${commentId}`,
         {
           method: "PUT",
           credentials: "include",
@@ -99,7 +100,7 @@ export default function PostDetailsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/comments/${commentId}`,
+        `http://localhost:5289/api/comments/${commentId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -118,7 +119,7 @@ export default function PostDetailsPage() {
   if (!window.confirm("Are you sure you want to delete this post?")) return;
 
   try {
-    const res = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+    const res = await fetch(`http://localhost:5289/api/posts/${postId}`, {
       method: "DELETE",
       credentials: "include",
     });
