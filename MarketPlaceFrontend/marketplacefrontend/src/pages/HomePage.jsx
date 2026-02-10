@@ -1,84 +1,64 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import FeaturedCarousel from "../components/FeaturedCarousel";
 import CategorySection from "../components/CategorySection";
 import { PostsAPI } from "../services/api";
 
-
-export default function HomePage() {
-  const [featuredPosts, setFeaturedPosts] = useState([]);
-  const [electronicsPosts, setElectronicsPosts] = useState([]);
-  const [vehiclePosts, setVehiclePosts] = useState([]);
-  const [location, setLocation] = useState("");
-
-  useEffect(() => {
-    async function loadPosts() {
-      try {
-        const featured = await PostsAPI.fetch({ location });
-        const electronics = await PostsAPI.fetch({
-          location,
-          category: "Electronics",
-        });
-        const vehicles = await PostsAPI.fetch({
-          location,
-          category: "Vehicles",
-        });
-
-        setFeaturedPosts(featured);
-        setElectronicsPosts(electronics);
-        setVehiclePosts(vehicles);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    loadPosts();
-  }, [location]);
-
-  return (
-    <>
-      <Header onAccountClick={() => (window.location.href = "/account")} />
-
-      <main style={styles.main}>
-        {/* Location filter (stretch goal) */}
-        <section style={styles.filterBar}>
-          <label>
-            Filter by location:
-            <input
-              type="text"
-              placeholder="Enter city or zip"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              style={styles.input}
-            />
-          </label>
-        </section>
-
-        <FeaturedCarousel posts={featuredPosts} />
-
-        <CategorySection
-          title="Electronics"
-          posts={electronicsPosts}
-        />
-
-        <CategorySection
-          title="Vehicles"
-          posts={vehiclePosts}
-        />
-      </main>
-    </>
-  );
-}
-
 const styles = {
-  main: {
-    padding: "2rem",
-  },
-  filterBar: {
-    marginBottom: "1.5rem",
-  },
-  input: {
-    marginLeft: "0.5rem",
-    padding: "0.25rem",
-  },
+    main: {
+        padding: "2rem",
+    },
+    input: {
+        marginLeft: "0.5rem",
+        padding: "0.25rem",
+    },
 };
+
+export default function HomePage({ onLogout }) {
+    const navigate = useNavigate();
+
+    const [featuredPosts, setFeaturedPosts] = useState([]);
+    const [electronicsPosts, setElectronicsPosts] = useState([]);
+    const [vehiclePosts, setVehiclePosts] = useState([]);
+    const [location] = useState("");
+
+    useEffect(() => {
+        async function loadPosts() {
+            try {
+                const featured = await PostsAPI.fetch({ location });
+                const electronics = await PostsAPI.fetch({
+                    location,
+                    category: "Electronics",
+                });
+                const vehicles = await PostsAPI.fetch({
+                    location,
+                    category: "Vehicles",
+                });
+
+                setFeaturedPosts(featured);
+                setElectronicsPosts(electronics);
+                setVehiclePosts(vehicles);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadPosts();
+    }, [location]);
+
+    return (
+        <>
+            <Header
+                onAccountClick={() => navigate("/account")}
+                onLogout={onLogout}
+            />
+
+            <main style={styles.main}>
+                <FeaturedCarousel posts={featuredPosts} />
+                <CategorySection title="Electronics" posts={electronicsPosts} />
+                <CategorySection title="Vehicles" posts={vehiclePosts} />
+            </main>
+        </>
+    );
+}

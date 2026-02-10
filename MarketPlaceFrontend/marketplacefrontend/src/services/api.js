@@ -6,8 +6,11 @@ async function handleResponse(res) {
         const error = await res.json().catch(() => ({ message: res.statusText }));
         throw new Error(error?.message || "An error occurred");
     }
+
+    if (res.status === 204) return null;
     return res.json();
 }
+
 
 export const AuthAPI = {
     register: async ({ email, password }) => {
