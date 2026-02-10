@@ -32,8 +32,11 @@ public class PostController : ControllerBase
         // Grab userId from cookie
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (images.Count > 10)
-            return BadRequest("Max 10 Images Allowed");
+        if (userId == null)
+            return BadRequest("Cannot Validate User");
+
+        if (images.Count > 5)
+            return BadRequest("Max 5 Images Allowed");
 
         // Build the entity from the DTO + server-side data
         var post = new Posts
@@ -45,7 +48,7 @@ public class PostController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-
+        
         _db.Posts.Add(post);
         await _db.SaveChangesAsync();
 
@@ -90,73 +93,11 @@ public class PostController : ControllerBase
                     UserId = p.UserId,
                     Title = p.Title,
                     Description = p.Description,
-                    
+                    PhotoCount = p.PhotoCount
                 }
             ).ToListAsync();
         
         return Ok(posts);
-    }
-
-    [HttpGet]
-    public IActionResult GetSingleThumbNail(int userId, int postId)
-    {
-        var thumbnailPath = Path.Combine(_imageStorage, userId.ToString(), postId.ToString());
-
-        if (!Directory.Exists(thumbnailPath))
-            return NotFound();
-
-        var files = Directory.GetFiles(thumbnailPath)
-            .Where(f => f.ToLower().EndsWith(".jpg") || f.ToLower().EndsWith(".png"))
-            .OrderBy(f => f)
-            .ToArray();
-        
-        if (files.Length == 0)
-            return NotFound();
-
-        var firstImagePath = files[0];
-        
-        var fileBytes = System.IO.File.ReadAllBytes(firstImagePath);
-        
-        var contentType = Path.GetExtension(firstImagePath).ToLower() switch
-        {
-            ".png" => "image/png",
-            ".jpg" => "image/jpeg",
-            ".jpeg" => "image/jpeg",
-            _ => "application/octet-stream"
-        };
-        
-        return File(fileBytes, contentType);
-    }
-
-    [HttpGet]
-    public IActionResult GetPhotoForPost(int userId, int postId, int imageId)
-    {
-        var imagePath = Path.Combine(_imageStorage, userId.ToString(), postId.ToString());
-        
-        if (!Directory.Exists(imagePath))
-            return NotFound();
-
-        var files = Directory.GetFiles(imagePath)
-            .Where(f => f.ToLower().EndsWith(".jpg") || f.ToLower().EndsWith(".png") || f.ToLower().EndsWith(".jpeg"))
-            .OrderBy(f => f)
-            .ToArray();
-        
-        if (files.Length == 0)
-            return NotFound();
-
-        var firstImagePath = files[imageId - 1];
-        
-        var fileBytes = System.IO.File.ReadAllBytes(firstImagePath);
-        
-        var contentType = Path.GetExtension(firstImagePath).ToLower() switch
-        {
-            ".png" => "image/png",
-            ".jpg" => "image/jpeg",
-            ".jpeg" => "image/jpeg",
-            _ => "application/octet-stream"
-        };
-        
-        return File(fileBytes, contentType);
     }
  
     [HttpDelete]
@@ -171,7 +112,7 @@ public class PostController : ControllerBase
             return NotFound();
 
         // Check ownwership
-        if (post.UserId.ToString() != userId)
+        if (post.UserId != userId)
             return Forbid();
 
         _db.Posts.Remove(post);
@@ -179,7 +120,7 @@ public class PostController : ControllerBase
         
         var imageDir = Path.Combine(
             _imageStorage,
-            post.UserId.ToString(),
+            post.UserId,
             post.Id.ToString()
         );
         

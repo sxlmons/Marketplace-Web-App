@@ -12,5 +12,4 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Comments> Comments => Set<Comments>();
     public DbSet<Posts> Posts => Set<Posts>();
     public DbSet<Logs> Logs => Set<Logs>();
-    public DbSet<Images> Images => Set<Images>();
 }

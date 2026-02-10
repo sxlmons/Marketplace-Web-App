@@ -23,9 +23,14 @@ public class ImageController : ControllerBase
     }
     
     [HttpGet]
-    public IActionResult GetSingleThumbNail(int userId, int postId)
+    public IActionResult GetSingleThumbNail(int postId)
     {
-        var thumbnailPath = Path.Combine(_imageStorage, userId.ToString(), postId.ToString());
+        var post = _db.Posts.FirstOrDefault(p => p.Id == postId);
+
+        if (post == null)
+            return NotFound();
+        
+        var thumbnailPath = Path.Combine(_imageStorage, post.UserId, postId.ToString());
 
         if (!Directory.Exists(thumbnailPath))
             return NotFound();
@@ -54,9 +59,17 @@ public class ImageController : ControllerBase
     }
     
     [HttpGet]
-    public IActionResult GetPhotoForPost(int userId, int postId, int imageId)
+    public IActionResult GetPhotoForPost(int postId, int imageId)
     {
-        var imagePath = Path.Combine(_imageStorage, userId.ToString(), postId.ToString());
+        var post = _db.Posts.FirstOrDefault(p => p.Id == postId);
+
+        if (post == null)
+            return NotFound();
+
+        if (imageId < 1)
+            return BadRequest("Invalid ImageId");
+        
+        var imagePath = Path.Combine(_imageStorage, post.UserId, postId.ToString());
         
         if (!Directory.Exists(imagePath))
             return NotFound();
@@ -66,7 +79,7 @@ public class ImageController : ControllerBase
             .OrderBy(f => f)
             .ToArray();
         
-        if (files.Length == 0)
+        if (files.Length == 0 || files.Length < imageId)
             return NotFound();
 
         var firstImagePath = files[imageId - 1];
@@ -83,6 +96,4 @@ public class ImageController : ControllerBase
         
         return File(fileBytes, contentType);
     }
-    
-    
 }
