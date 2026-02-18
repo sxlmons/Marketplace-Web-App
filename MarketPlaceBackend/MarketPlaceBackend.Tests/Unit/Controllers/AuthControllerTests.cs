@@ -113,10 +113,30 @@ public class AuthControllerTests
     [Test]
     public async Task Register_OnFailure_LogsFailedAttempt()
     {
-        // TODO: Setup CreateAsync to return Failed
-        // TODO: Call Register
-        // TODO: Verify LogEvent was called once with "Failed registration"
+        var identityErrors = IdentityResult.Failed(
+            new IdentityError { Description = "Email already taken" }
+        );
+
+        _mockUserManager
+            .Setup(x => x.CreateAsync(
+                It.IsAny<IdentityUser>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(identityErrors);
+
+        var request = new RegisterRequest
+        {
+            Email = "duplicate@example.com",
+            Password = "ValidPass1!"
+        };
+
+        await _controller.Register(request);
+
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("Failed registration attempt"))),
+            Times.Once);
     }
+
 
     // ==========================================
     //              LOGIN TESTS
@@ -149,47 +169,124 @@ public class AuthControllerTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
-    [Test]
+   [Test]
     public async Task Login_WithInvalidCredentials_ReturnsBadRequest()
     {
-        // TODO: Setup PasswordSignInAsync to return Failed
-        // TODO: Call Login
-        // TODO: Assert result is BadRequestObjectResult
-        // TODO: Assert message is generic "Invalid credentials" (not revealing which field was wrong)
+        _mockSignInManager
+            .Setup(x => x.PasswordSignInAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                false,
+                true))
+            .ReturnsAsync(SignInResult.Failed);
+
+        var result = await _controller.Login(new LoginRequest
+        {
+            Email = "test@test.com",
+            Password = "WrongPassword"
+        });
+
+        var badRequest = result as BadRequestObjectResult;
+
+        Assert.That(badRequest, Is.Not.Null);
+        Assert.That(badRequest.Value.ToString(), Does.Contain("Invalid credentials"));
     }
+
 
     [Test]
     public async Task Login_WhenAccountLockedOut_ReturnsBadRequestWithLockoutMessage()
     {
-        // TODO: Setup PasswordSignInAsync to return Lockedout
-        // TODO: Call Login
-        // TODO: Assert result is BadRequestObjectResult
-        // TODO: Assert message mentions account locked
+         _mockSignInManager
+            .Setup(x => x.PasswordSignInAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                false,
+                true))
+            .ReturnsAsync(SignInResult.LockedOut);
+
+        var result = await _controller.Login(new LoginRequest
+        {
+            Email = "test@test.com",
+            Password = "WrongPassword"
+        });
+
+        var badRequest = result as BadRequestObjectResult;
+
+        Assert.That(badRequest, Is.Not.Null);
+        Assert.That(badRequest.Value.ToString(), Does.Contain("Account locked"));
     }
 
     [Test]
     public async Task Login_OnSuccess_LogsLoginEvent()
     {
-        // TODO: Setup PasswordSignInAsync to return Success
-        // TODO: Setup FindByEmailAsync to return a user
-        // TODO: Call Login
-        // TODO: Verify LogEvent was called with "logged in successfully"
+         _mockSignInManager
+            .Setup(x => x.PasswordSignInAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                false,
+                true))
+            .ReturnsAsync(SignInResult.Success);
+
+         _mockUserManager
+            .Setup(x => x.FindByEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync(new IdentityUser { Id = "898324" });
+
+        await _controller.Login(new LoginRequest
+        {
+            Email = "test@test.com",
+            Password = "ValidPass1!"
+        });
+
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("logged in successfully"))),
+            Times.Once);
     }
 
     [Test]
     public async Task Login_OnFailure_LogsFailedAttempt()
     {
-        // TODO: Setup PasswordSignInAsync to return Failed
-        // TODO: Call Login
-        // TODO: Verify LogEvent was called with "Failed login attempt"
+        _mockSignInManager
+            .Setup(x => x.PasswordSignInAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                false,
+                true))
+            .ReturnsAsync(SignInResult.Failed);
+
+        await _controller.Login(new LoginRequest
+        {
+            Email = "test@test.com",
+            Password = "WrongPassword"
+        });
+
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("Failed login attempt"))),
+            Times.Once);
     }
 
     [Test]
     public async Task Login_OnLockout_LogsLockoutEvent()
     {
-        // TODO: Setup PasswordSignInAsync to return Lockedout
-        // TODO: Call Login
-        // TODO: Verify LogEvent was called with "Account lockout triggered"
+         _mockSignInManager
+            .Setup(x => x.PasswordSignInAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                false,
+                true))
+            .ReturnsAsync(SignInResult.LockedOut);
+
+        await _controller.Login(new LoginRequest
+        {
+            Email = "test@test.com",
+            Password = "WrongPassword"
+        });
+
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("Account lockout triggered"))),
+            Times.Once);
     }
 
     // ==========================================
@@ -212,17 +309,26 @@ public class AuthControllerTests
     [Test]
     public async Task Logout_WhenCalled_CallsSignOutAsync()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Call Logout
-        // TODO: Verify SignOutAsync was called exactly once
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        await _controller.Logout();
+
+        _mockSignInManager.Verify(
+            x => x.SignOutAsync(),
+            Times.Once);
     }
 
     [Test]
     public async Task Logout_WhenCalled_LogsLogoutEvent()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Call Logout
-        // TODO: Verify LogEvent was called with "logged out"
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        await _controller.Logout();
+
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("logged out"))),
+            Times.Once);
     }
 
     // ==========================================
@@ -259,10 +365,15 @@ public class AuthControllerTests
     [Test]
     public async Task Me_WhenUserNotFound_ReturnsNotFound()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return null
-        // TODO: Call Me
-        // TODO: Assert result is NotFoundResult
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync((IdentityUser)null);
+
+        var result = await _controller.Me();
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     // ==========================================
@@ -296,59 +407,170 @@ public class AuthControllerTests
     [Test]
     public async Task UpdateEmail_WhenUserIdNull_ReturnsUnauthorized()
     {
-        // TODO: Setup controller with NO user claims (unauthenticated)
-        // TODO: Call UpdateEmail
-        // TODO: Assert result is UnauthorizedResult
+        var result = await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "new@test.com"
+        });
+
+        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
     }
 
     [Test]
     public async Task UpdateEmail_WhenUserNotFound_ReturnsNotFound()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return null
-        // TODO: Call UpdateEmail
-        // TODO: Assert result is NotFoundObjectResult
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync((IdentityUser)null);
+
+        var result = await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "new@test.com"
+        });
+
+        Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
     }
 
     [Test]
     public async Task UpdateEmail_WhenUpdateFails_ReturnsBadRequest()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup UpdateAsync to return Failed with errors
-        // TODO: Call UpdateEmail
-        // TODO: Assert result is BadRequestObjectResult
+        // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser
+        {
+            Id = "898324",
+            Email = "old@test.com",
+            UserName = "old@test.com"
+        };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        var failedResult = IdentityResult.Failed(
+            new IdentityError { Description = "Email invalid" }
+        );
+
+        _mockUserManager
+            .Setup(x => x.UpdateAsync(It.IsAny<IdentityUser>()))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        var result = await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "bademail"
+        });
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
     public async Task UpdateEmail_UpdatesBothEmailAndUserName()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup UpdateAsync to return Success
-        // TODO: Call UpdateEmail with new email
-        // TODO: Verify user.Email AND user.UserName were both set to new email
+        // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser
+        {
+            Id = "898324",
+            Email = "old@test.com",
+            UserName = "old@test.com"
+        };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        _mockUserManager
+            .Setup(x => x.UpdateAsync(It.IsAny<IdentityUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "new@test.com"
+        });
+
+        // Assert
+        Assert.That(user.Email, Is.EqualTo("new@test.com"));
+        Assert.That(user.UserName, Is.EqualTo("new@test.com"));
     }
 
     [Test]
     public async Task UpdateEmail_OnSuccess_LogsEmailChange()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user with old email
-        // TODO: Setup UpdateAsync to return Success
-        // TODO: Call UpdateEmail
-        // TODO: Verify LogEvent was called with old and new email in message
+       // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser
+        {
+            Id = "898324",
+            Email = "old@test.com",
+            UserName = "old@test.com"
+        };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        _mockUserManager
+            .Setup(x => x.UpdateAsync(It.IsAny<IdentityUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "new@test.com"
+        });
+
+        // Assert
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("old@test.com") &&
+                s.Contains("new@test.com"))),
+            Times.Once);
     }
 
     [Test]
     public async Task UpdateEmail_OnFailure_LogsFailedAttempt()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup UpdateAsync to return Failed
-        // TODO: Call UpdateEmail
-        // TODO: Verify LogEvent was called with "Failed email update"
-    }
+        // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser
+        {
+            Id = "898324",
+            Email = "old@test.com"
+        };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        var failedResult = IdentityResult.Failed(
+            new IdentityError { Description = "Update failed" }
+        );
+
+        _mockUserManager
+            .Setup(x => x.UpdateAsync(It.IsAny<IdentityUser>()))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        await _controller.UpdateEmail(new UpdateEmailRequest
+        {
+            NewEmail = "new@test.com"
+        });
+
+        // Assert
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("Failed email update"))),
+            Times.Once);
+}
+
 
     // ==========================================
     //         UPDATE PASSWORD TESTS
@@ -385,40 +607,123 @@ public class AuthControllerTests
     [Test]
     public async Task UpdatePassword_WhenUserNotFound_ReturnsNotFound()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return null
-        // TODO: Call UpdatePassword
-        // TODO: Assert result is NotFoundResult
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync((IdentityUser)null);
+
+        var result = await _controller.UpdatePassword(new UpdatePasswordRequest
+        {
+            CurrentPassword = "Old",
+            NewPassword = "New"
+        });
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
     public async Task UpdatePassword_WhenWrongCurrentPassword_ReturnsBadRequest()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup ChangePasswordAsync to return Failed
-        // TODO: Call UpdatePassword with wrong current password
-        // TODO: Assert result is BadRequestObjectResult
+        // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser { Id = "898324" };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        var failedResult = IdentityResult.Failed(
+            new IdentityError { Description = "Incorrect password" }
+        );
+
+        _mockUserManager
+            .Setup(x => x.ChangePasswordAsync(
+                user,
+                "WrongPassword",
+                "NewPassword1!"))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        var result = await _controller.UpdatePassword(new UpdatePasswordRequest
+        {
+            CurrentPassword = "WrongPassword",
+            NewPassword = "NewPassword1!"
+        });
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
     public async Task UpdatePassword_OnSuccess_LogsPasswordUpdate()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup ChangePasswordAsync to return Success
-        // TODO: Call UpdatePassword
-        // TODO: Verify LogEvent was called with "updated their password"
+        // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser { Id = "898324" };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        _mockUserManager
+            .Setup(x => x.ChangePasswordAsync(
+                user,
+                "OldPassword1!",
+                "NewPassword1!"))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        await _controller.UpdatePassword(new UpdatePasswordRequest
+        {
+            CurrentPassword = "OldPassword1!",
+            NewPassword = "NewPassword1!"
+        });
+
+        // Assert
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("updated their password"))),
+            Times.Once);
     }
 
     [Test]
     public async Task UpdatePassword_OnFailure_LogsFailedAttempt()
     {
-        // TODO: Setup controller with authenticated user claims
-        // TODO: Setup FindByIdAsync to return a user
-        // TODO: Setup ChangePasswordAsync to return Failed
-        // TODO: Call UpdatePassword
-        // TODO: Verify LogEvent was called with "Failed to update password"
+         // Arrange
+        TestHelper.SetUserClaims(_controller, "898324");
+
+        var user = new IdentityUser { Id = "898324" };
+
+        _mockUserManager
+            .Setup(x => x.FindByIdAsync("898324"))
+            .ReturnsAsync(user);
+
+        var failedResult = IdentityResult.Failed(
+            new IdentityError { Description = "Incorrect password" }
+        );
+
+        _mockUserManager
+            .Setup(x => x.ChangePasswordAsync(
+                user,
+                "WrongPassword",
+                "NewPassword1!"))
+            .ReturnsAsync(failedResult);
+
+        // Act
+        await _controller.UpdatePassword(new UpdatePasswordRequest
+        {
+            CurrentPassword = "WrongPassword",
+            NewPassword = "NewPassword1!"
+        });
+
+        // Assert
+        _mockLogger.Verify(
+            x => x.LogEvent(It.Is<string>(s =>
+                s.Contains("Failed to update password"))),
+            Times.Once);
     }
 
 
