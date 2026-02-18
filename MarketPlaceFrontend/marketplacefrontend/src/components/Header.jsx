@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Header({ onAccountClick, onLogout }) {
+export default function Header({ onAccountClick, onLogout, toggleTheme, currentTheme }) {
     const [open, setOpen] = useState(false);
     const menuRef = useRef(null);
-    const navigate = useNavigate(); // hook to programmatically navigate
+    const navigate = useNavigate();
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -12,14 +12,12 @@ export default function Header({ onAccountClick, onLogout }) {
                 setOpen(false);
             }
         }
-
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     return (
         <header style={styles.header}>
-            {/* Make Marketplace clickable */}
             <h1
                 style={{ ...styles.logo, cursor: "pointer" }}
                 onClick={() => navigate("/home")}
@@ -28,6 +26,22 @@ export default function Header({ onAccountClick, onLogout }) {
             </h1>
 
             <nav style={{ position: "relative" }} ref={menuRef}>
+                <button
+                    style={styles.linkButton}
+                    onClick={() => navigate("/create")}
+                >
+                    Create Post
+                </button>
+
+                {}
+                <button
+                    onClick={toggleTheme}
+                    style={styles.themeButton}
+                    title="Toggle Dark/Light Mode"
+                >
+                    {currentTheme === "light" ? "🌙" : "🌞"}
+                </button>
+
                 <button
                     aria-label="Account"
                     onClick={() => setOpen((prev) => !prev)}
@@ -70,7 +84,7 @@ const styles = {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "1rem 2rem",
-        borderBottom: "1px solid #ddd",
+        borderBottom: "1px solid var(--border-color)",
     },
     logo: {
         margin: 0,
@@ -81,13 +95,30 @@ const styles = {
         background: "none",
         border: "none",
         cursor: "pointer",
+        marginLeft: "0.5rem",
+    },
+    themeButton: {
+        fontSize: "1.5rem",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        marginLeft: "0.5rem",
+    },
+    linkButton: {
+        marginRight: "0.5rem",
+        padding: "0.5rem 1rem",
+        backgroundColor: "var(--primary-color)",
+        border: "none",
+        borderRadius: "4px",
+        color: "#fff",
+        cursor: "pointer",
     },
     dropdown: {
         position: "absolute",
         right: 0,
         marginTop: "0.5rem",
-        background: "#fff",
-        border: "1px solid #ddd",
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-color)",
         borderRadius: "4px",
         boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         minWidth: "140px",
@@ -100,5 +131,6 @@ const styles = {
         border: "none",
         textAlign: "left",
         cursor: "pointer",
+        color: "var(--text-color)",
     },
 };

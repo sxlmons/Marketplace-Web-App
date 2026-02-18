@@ -2,26 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PostsAPI } from "../services/api";
 
-const CATEGORIES = [
-    "Electronics",
-    "Vehicles",
-    "Furniture",
-    "Clothing",
-    "Services",
-    "Other",
-];
-
 export default function EditPostPage() {
     const { postId } = useParams();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         title: "",
-        category: "",
         description: "",
         images: [],
     });
-
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -35,7 +24,6 @@ export default function EditPostPage() {
                 if (isMounted) {
                     setFormData({
                         title: data.title,
-                        category: data.category,
                         description: data.description,
                         images: data.images || [],
                     });
@@ -52,7 +40,6 @@ export default function EditPostPage() {
         };
     }, [postId]);
 
-    // Handle input changes
     function handleChange(e) {
         setFormData({
             ...formData,
@@ -60,30 +47,32 @@ export default function EditPostPage() {
         });
     }
 
-    // Handle image uploads
     function handleImageUpload(e) {
         const files = Array.from(e.target.files);
-        files.forEach((file) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData((prev) => ({
-                    ...prev,
-                    images: [...prev.images, reader.result],
-                }));
-            };
-            reader.readAsDataURL(file);
-        });
+        setFormData((prev) => ({
+            ...prev,
+            images: [...prev.images, ...files],
+        }));
     }
 
-    // Save post
     async function handleSubmit(e) {
         e.preventDefault();
         setSaving(true);
         setError("");
 
         try {
-            await PostsAPI.update(postId, formData);
-            navigate(`/posts/${postId}`);
+            const fd = new FormData();
+            fd.append("Title", formData.title);
+            fd.append("Description", formData.description);
+
+            formData.images.forEach((img) => {
+                if (img instanceof File) {
+                    fd.append("Images", img);
+                }
+            });
+
+            await PostsAPI.update(postId, fd);
+            navigate(`/post/${postId}`);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -91,7 +80,6 @@ export default function EditPostPage() {
         }
     }
 
-    // Delete post
     async function handleDelete() {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
 
@@ -103,116 +91,55 @@ export default function EditPostPage() {
         }
     }
 
-    if (loading) {
-        return <p style={styles.center}>Loading post...</p>;
-    }
+    if (loading) return <p className="center">Loading post...</p>;
 
     return (
-        <main style={styles.container}>
-            <section style={styles.card}>
-                <h1>Edit Post</h1>
-                <p>Update your post details</p>
+        <main className="container">
+            {error && <div className="error">{error}</div>}
 
-                {error && <div style={styles.error}>{error}</div>}
+            <h1>Edit Post</h1>
 
-                <form onSubmit={handleSubmit}>
-                    <label style={styles.label}>
-                        Title
-                        <input
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            required
-                            style={styles.input}
-                        />
-                    </label>
+            <form onSubmit={handleSubmit} className="form">
+                <label>Title</label>
+                <input
+                    name="title"
+                    type="text"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className="input"
+                />
 
-                    <label style={styles.label}>
-                        Category
-                        <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleChange}
-                            required
-                            style={styles.input}
-                        >
-                            {CATEGORIES.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                <label>Description</label>
+                <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="textarea"
+                    rows={5}
+                />
 
-                    <label style={styles.label}>
-                        Description
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            rows={4}
-                            required
-                            style={styles.textarea}
-                        />
-                    </label>
+                <label>Images</label>
+                <input
+                    type="file"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="input"
+                />
 
-                    <label style={styles.label}>
-                        Add Images (optional)
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                        />
-                    </label>
-
-                    {formData.images.length > 0 && (
-                        <div style={styles.previewGrid}>
-                            {formData.images.map((img, i) => (
-                                <img key={i} src={img} alt="Preview" style={styles.preview} />
-                            ))}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        style={styles.button}
-                    >
-                        {saving ? "Saving..." : "Save Changes"}
+                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+                    <button type="submit" className="button" disabled={saving}>
+                        {saving ? "Saving..." : "Save"}
                     </button>
-                </form>
-
-                <hr style={styles.divider} />
-
-                <button onClick={handleDelete} style={styles.deleteButton}>
-                    Delete Post
-                </button>
-            </section>
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="button"
+                        style={{ backgroundColor: "#dc3545" }}
+                    >
+                        Delete
+                    </button>
+                </div>
+            </form>
         </main>
     );
-}
-
-const styles = {
-    container: {
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingTop: "3rem",
-        backgroundColor: "#f7f7f7",
-    },
-    card: {
-        width: "100%",
-        maxWidth: "600px",
-        backgroundColor: "#fff",
-        padding: "2rem",
-        borderRadius: "8px",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    },
-    label: {
-        display: "block",
-        marginBottom: "1rem",
-        fontWeight: "bold",
-    }
 }

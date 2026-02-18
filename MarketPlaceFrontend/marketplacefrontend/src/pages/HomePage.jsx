@@ -1,63 +1,107 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import FeaturedCarousel from "../components/FeaturedCarousel";
-import CategorySection from "../components/CategorySection";
 import { PostsAPI } from "../services/api";
 
-const styles = {
-    main: {
-        padding: "2rem",
-    },
-    input: {
-        marginLeft: "0.5rem",
-        padding: "0.25rem",
-    },
-};
+const API_BASE = "http://localhost:5289/api"
 
-export default function HomePage({ onLogout }) {
+const PAGE_SIZE = 10;
+
+export default function HomePage() {
     const navigate = useNavigate();
 
-    const [featuredPosts, setFeaturedPosts] = useState([]);
-    const [electronicsPosts, setElectronicsPosts] = useState([]);
-    const [vehiclePosts, setVehiclePosts] = useState([]);
-    const [location] = useState("");
+    const [posts, setPosts] = useState([]);
+    const [limit, setLimit] = useState(PAGE_SIZE);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        async function loadPosts() {
-            try {
-                const featured = await PostsAPI.fetch({ location });
-                const electronics = await PostsAPI.fetch({
-                    location,
-                    category: "Electronics",
-                });
-                const vehicles = await PostsAPI.fetch({
-                    location,
-                    category: "Vehicles",
-                });
+        let cancelled = false;
 
-                setFeaturedPosts(featured);
-                setElectronicsPosts(electronics);
-                setVehiclePosts(vehicles);
+        async function fetchPosts() {
+            setLoading(true);
+
+            try {
+                const data = await PostsAPI.getLatestPosts(limit);
+
+                if (!cancelled) {
+
+                    data.forEach(post => {
+                        const images = [];
+                        for (let i = 1; i <= post.photoCount; i++) {
+                            images.push(`${API_BASE}/Image/GetPhotoForPost?postId=${post.id}&imageId=${i}`);
+                        }
+                        post.images = images;
+                    });
+
+                    setPosts(data);
+
+                    if (data.length < limit) {
+                        setHasMore(false);
+                    }
+                }
             } catch (err) {
                 console.error(err);
             }
+
+            if (!cancelled) {
+                setLoading(false);
+            }
         }
 
-        loadPosts();
-    }, [location]);
+        fetchPosts();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [limit]);
+
+    useEffect(() => {
+        function handleScroll() {
+            if (
+                window.innerHeight + document.documentElement.scrollTop >=
+                document.documentElement.scrollHeight - 100 &&
+                !loading &&
+                hasMore
+            ) {
+                setLimit((prev) => prev + PAGE_SIZE);
+            }
+        }
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [loading, hasMore]);
 
     return (
         <>
-            <Header
-                onAccountClick={() => navigate("/account")}
-                onLogout={onLogout}
-            />
+            <main className="container">
+                {posts.map((post) => (
+                    <div
+                        key={post.id}
+                        className="post-card"
+                        onClick={() => navigate(`/post/${post.id}`)}
+                    >
+                        <div className="post-title">{post.title}</div>
+                        <div>{post.description}</div>
 
-            <main style={styles.main}>
-                <FeaturedCarousel posts={featuredPosts} />
-                <CategorySection title="Electronics" posts={electronicsPosts} />
-                <CategorySection title="Vehicles" posts={vehiclePosts} />
+                        { }
+                        {post.images?.length > 0 && (
+                            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                                {post.images.map((img, i) => (
+                                    <img
+                                        key={i}
+                                        src={img}
+                                        alt={`Post ${post.id} image ${i + 1}`}
+                                        style={{ width: 150, height: 150, objectFit: "cover", borderRadius: 4 }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+
+
+                {loading && <p>Loading...</p>}
+                {!hasMore && <p>No more posts</p>}
             </main>
         </>
     );

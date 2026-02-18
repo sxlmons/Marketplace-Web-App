@@ -2,54 +2,28 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostsAPI } from "../services/api";
 
-const CATEGORIES = [
-    "Electronics",
-    "Vehicles",
-    "Furniture",
-    "Clothing",
-    "Services",
-    "Other",
-];
-
 export default function CreatePostPage() {
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        category: "Electronics",
-        images: [], // array of base64 strings
-    });
-
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    // Handle text input changes
-    function handleChange(e) {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    }
-
-    // Handle image uploads
     function handleImageUpload(e) {
         const files = Array.from(e.target.files);
 
-        files.forEach((file) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData((prev) => ({
-                    ...prev,
-                    images: [...prev.images, reader.result],
-                }));
-            };
-            reader.readAsDataURL(file);
-        });
+        if (files.length + images.length > 5) {
+            setError("Maximum 5 images allowed");
+            return;
+        }
+
+        setImages((prev) => [...prev, ...files]);
+        setError("");
     }
 
-    // Submit form
     async function handleSubmit(e) {
         e.preventDefault();
         setError("");
@@ -57,19 +31,19 @@ export default function CreatePostPage() {
         setLoading(true);
 
         try {
-            await PostsAPI.create(formData); // Use API helper
-            setSuccess("Post created successfully!");
+            const formData = new FormData();
+            formData.append("Title", title);
+            formData.append("Description", description);
+            images.forEach((file) => formData.append("Images", file));
 
-            // Reset form
-            setFormData({
-                title: "",
-                description: "",
-                category: "Electronics",
-                images: [],
-            });
+            const res = await PostsAPI.create(formData);
 
-            // Optional: navigate to posts page
-            navigate("/home");
+            setSuccess("Post created successfully");
+            setTitle("");
+            setDescription("");
+            setImages([]);
+
+            navigate(`/post/${res.postId}`);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -78,79 +52,61 @@ export default function CreatePostPage() {
     }
 
     return (
-        <main style={styles.container}>
-            <section style={styles.card}>
+        <main className="container">
+            <section className="card">
                 <h1>Create New Post</h1>
-                <p>Share an item or service with others</p>
 
-                {error && <div style={styles.error}>{error}</div>}
-                {success && <div style={styles.success}>{success}</div>}
+                {error && <div className="error">{error}</div>}
+                {success && <div className="success">{success}</div>}
 
-                <form onSubmit={handleSubmit}>
-                    <label style={styles.label}>
+                <form onSubmit={handleSubmit} className="form">
+                    <label>
                         Title
                         <input
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="input"
                             required
-                            style={styles.input}
                         />
                     </label>
 
-                    <label style={styles.label}>
-                        Category
-                        <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleChange}
-                            required
-                            style={styles.input}
-                        >
-                            {CATEGORIES.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-
-                    <label style={styles.label}>
+                    <label>
                         Description
                         <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            required
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="textarea"
                             rows={4}
-                            style={styles.textarea}
+                            required
                         />
                     </label>
 
-                    <label style={styles.label}>
-                        Images (optional)
+                    <label>
+                        Images (max 5)
                         <input
                             type="file"
                             multiple
                             accept="image/*"
                             onChange={handleImageUpload}
+                            className="input"
                         />
                     </label>
 
-                    {formData.images.length > 0 && (
-                        <div style={styles.previewGrid}>
-                            {formData.images.map((img, index) => (
+                    {images.length > 0 && (
+                        <div className="image-previews">
+                            {images.map((file, i) => (
                                 <img
-                                    key={index}
-                                    src={img}
-                                    alt="Preview"
-                                    style={styles.preview}
+                                    key={i}
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Preview ${i + 1}`}
+                                    className="image-preview"
                                 />
                             ))}
                         </div>
                     )}
 
-                    <button type="submit" disabled={loading} style={styles.button}>
+                    <button type="submit" className="button" disabled={loading}>
                         {loading ? "Creating..." : "Create Post"}
                     </button>
                 </form>
@@ -158,78 +114,3 @@ export default function CreatePostPage() {
         </main>
     );
 }
-
-const styles = {
-    container: {
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingTop: "3rem",
-        backgroundColor: "#f7f7f7",
-    },
-    card: {
-        width: "100%",
-        maxWidth: "600px",
-        backgroundColor: "#fff",
-        padding: "2rem",
-        borderRadius: "8px",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    },
-    label: {
-        display: "block",
-        marginBottom: "1rem",
-        fontWeight: "bold",
-    },
-    input: {
-        width: "100%",
-        padding: "0.5rem",
-        marginTop: "0.25rem",
-        borderRadius: "4px",
-        border: "1px solid #ccc",
-    },
-    textarea: {
-        width: "100%",
-        padding: "0.5rem",
-        marginTop: "0.25rem",
-        borderRadius: "4px",
-        border: "1px solid #ccc",
-    },
-    button: {
-        width: "100%",
-        padding: "0.75rem",
-        marginTop: "1rem",
-        backgroundColor: "#28a745",
-        color: "#fff",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-    },
-    previewGrid: {
-        display: "flex",
-        gap: "0.5rem",
-        marginBottom: "1rem",
-        flexWrap: "wrap",
-    },
-    preview: {
-        width: "80px",
-        height: "80px",
-        objectFit: "cover",
-        borderRadius: "4px",
-        border: "1px solid #ccc",
-    },
-    error: {
-        marginBottom: "1rem",
-        color: "#b00020",
-        backgroundColor: "#fdecea",
-        padding: "0.5rem",
-        borderRadius: "4px",
-    },
-    success: {
-        marginBottom: "1rem",
-        color: "#155724",
-        backgroundColor: "#d4edda",
-        padding: "0.5rem",
-        borderRadius: "4px",
-    },
-};

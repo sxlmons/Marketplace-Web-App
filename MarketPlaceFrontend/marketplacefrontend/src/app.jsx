@@ -1,45 +1,39 @@
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import AccountProfilePage from "./pages/ProfilePage";
+import CreatePostPage from "./pages/CreatePostPage";
 import PostDetailsPage from "./pages/PostDetailsPage";
 import EditPostPage from "./pages/EditPostPage";
+
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthAPI } from "./services/api";
+import AppLayout from "./components/AppLayout";
 
-function AppRoutes() {
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        try {
-            await AuthAPI.logout();
-        } catch (err) {
-            console.error("Logout failed:", err);
-        } finally {
-            navigate("/login", { replace: true });
-        }
-    };
-
+function AppRoutes({ toggleTheme, currentTheme }) {
     return (
         <Routes>
+            {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
+            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
-                <Route
-                    path="/home"
-                    element={<HomePage onLogout={handleLogout} />}
-                />
-                <Route
-                    path="/account"
-                    element={<AccountProfilePage onLogout={handleLogout} />}
-                />
-                <Route path="/posts/:postId" element={<PostDetailsPage />} />
-                <Route path="/posts/:postId/edit" element={<EditPostPage />} />
+                <Route element={<AppLayout toggleTheme={toggleTheme} currentTheme={currentTheme} />}>
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/account" element={<AccountProfilePage />} />
+                    <Route path="/create" element={<CreatePostPage />} />
+                    <Route path="/post/:postId" element={<PostDetailsPage />} />
+                    <Route path="/post/:postId/edit" element={<EditPostPage />} />
+                </Route>
             </Route>
 
-            <Route path="*" element={<LoginPage />} />
+            {/* Default Redirect */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
     );
 }

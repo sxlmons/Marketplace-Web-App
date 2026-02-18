@@ -1,15 +1,20 @@
 const API_BASE = "http://localhost:5289/api";
 
-// Helper function for handling responses
 async function handleResponse(res) {
     if (!res.ok) {
         const error = await res.json().catch(() => ({ message: res.statusText }));
         throw new Error(error?.message || "An error occurred");
     }
 
-    if (res.status === 204) return null;
-    return res.json();
+    if (res.status === 204 || res.headers.get("Content-Length") === "0") return null;
+
+    try {
+        return await res.json();
+    } catch {
+        return null;
+    }
 }
+
 
 
 export const AuthAPI = {
@@ -71,47 +76,49 @@ export const AuthAPI = {
 };
 
 export const PostsAPI = {
-    // Fetch posts for carousel / homepage
-    // TODO: Modify after backend has a way to fetch user location - will default to using posts for that location
-    fetch: async ({ limit = 5, location, category } = {}) => {
-        let url = `${API_BASE}/posts?limit=${limit}`;
-        if (location) url += `&location=${encodeURIComponent(location)}`;
-        if (category) url += `&category=${encodeURIComponent(category)}`;
-        const res = await fetch(url, { credentials: "include" });
+    async getLatestPosts(limit) {
+        const res = await fetch(
+            `${API_BASE}/post/getlatestpostswithlimit?limit=${limit}`
+        );
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch posts");
+        }
+
         return handleResponse(res);
     },
 
-    // Fetch single post by ID
     fetchById: async (postId) => {
-        const res = await fetch(`${API_BASE}/posts/${postId}`, { credentials: "include" });
+        const res = await fetch(
+            `${API_BASE}/post/getsinglepostinfo?postId=${postId}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
         return handleResponse(res);
     },
 
-    // Create new post
     create: async (postData) => {
-        const res = await fetch(`${API_BASE}/posts`, {
+        const res = await fetch(`${API_BASE}/post/createnewpost`, {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(postData),
+            body: postData
         });
         return handleResponse(res);
     },
 
-    // Update existing post
     update: async (postId, postData) => {
-        const res = await fetch(`${API_BASE}/posts/${postId}`, {
+        const res = await fetch(`${API_BASE}/post/updatepost?postId=${postId}`, {
             method: "PUT",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(postData),
+            body: postData
         });
         return handleResponse(res);
     },
 
-    // Delete post
     delete: async (postId) => {
-        const res = await fetch(`${API_BASE}/posts/${postId}`, {
+        const res = await fetch(`${API_BASE}/post/deletepost?postId=${postId}`, {
             method: "DELETE",
             credentials: "include",
         });
@@ -121,35 +128,54 @@ export const PostsAPI = {
 
 export const CommentsAPI = {
     fetchByPost: async (postId) => {
-        const res = await fetch(`${API_BASE}/posts/${postId}/comments`, { credentials: "include" });
+        const res = await fetch(
+            `${API_BASE}/comment/getpostscomments?postId=${postId}`,
+            {
+                credentials: "include"
+            }
+        );
         return handleResponse(res);
     },
 
     create: async (postId, content) => {
-        const res = await fetch(`${API_BASE}/posts/${postId}/comments`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content }),
-        });
+        const res = await fetch(
+            `${API_BASE}/comment/createnewcomment`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    postId: postId,
+                    content: content
+                }),
+            }
+        );
         return handleResponse(res);
     },
 
     update: async (commentId, content) => {
-        const res = await fetch(`${API_BASE}/comments/${commentId}`, {
-            method: "PUT",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content }),
-        });
+        const res = await fetch(
+            `${API_BASE}/comment/updatecomment?commentId=${commentId}`,
+            {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: content
+                }),
+            }
+        );
         return handleResponse(res);
     },
 
     delete: async (commentId) => {
-        const res = await fetch(`${API_BASE}/comments/${commentId}`, {
-            method: "DELETE",
-            credentials: "include",
-        });
+        const res = await fetch(
+            `${API_BASE}/comment/deletecomment?commentId=${commentId}`,
+            {
+                method: "DELETE",
+                credentials: "include",
+            }
+        );
         return handleResponse(res);
     },
 };

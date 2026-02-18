@@ -1,0 +1,38 @@
+:root {
+    --bg-color: #f7f7f7;
+    --card-bg: #fff;
+    --text-color: #000;
+    --primary-color: #007bff;
+    --secondary-color: #ffc107;
+    --danger-color: #dc3545;
+    --border-color: #ddd;
+    --input-bg: #fff;
+    --input-border: #ccc;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+button {
+    cursor: pointer;
+}
+
+textarea, input, select {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    padding: 0.5rem;
+    width: 100%;
+}

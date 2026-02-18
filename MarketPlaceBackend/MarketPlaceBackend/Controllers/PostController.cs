@@ -78,7 +78,7 @@ public class PostController : ControllerBase
 
         _logger.LogEvent($"User {userId} created Post {post.Id}");
 
-        return Ok();
+        return Ok(new { postId = post.Id });
     }
     
     [HttpGet]
