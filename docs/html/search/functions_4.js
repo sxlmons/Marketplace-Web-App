@@ -1,0 +1,6 @@
+var searchData=
+[
+  ['deletecomment_0',['DeleteComment',['../class_market_place_backend_1_1_controllers_1_1_comment_controller.html#a20bb26d110f1901992a84bc7d168fe47',1,'MarketPlaceBackend::Controllers::CommentController']]],
+  ['deletepost_1',['DeletePost',['../class_market_place_backend_1_1_controllers_1_1_post_controller.html#aeb627e7403e6a0bb71b0932820c93a42',1,'MarketPlaceBackend::Controllers::PostController']]],
+  ['down_2',['Down',['../class_market_place_backend_1_1_migrations_1_1_initial_identity.html#a1bdc4ddf325b11feab6095005c26e0a1',1,'MarketPlaceBackend.Migrations.InitialIdentity.Down()'],['../class_market_place_backend_1_1_migrations_1_1_initial_create.html#ab695739cb73685a7866fabf74aeeda3e',1,'MarketPlaceBackend.Migrations.InitialCreate.Down()'],['../class_market_place_backend_1_1_migrations_1_1_add_post_category.html#a9f19e6fe0777b69aed3f05ef84b8ecd6',1,'MarketPlaceBackend.Migrations.AddPostCategory.Down()'],['../class_market_place_backend_1_1_migrations_1_1_new_intial_table.html#ada2c557c322ed7f0725908f55bbda6e1',1,'MarketPlaceBackend.Migrations.NewIntialTable.Down()'],['../class_market_place_backend_1_1_migrations_1_1_intitial_app_tables.html#a4ea6574408f0857decd55137d3024583',1,'MarketPlaceBackend.Migrations.IntitialAppTables.Down()']]]
+];

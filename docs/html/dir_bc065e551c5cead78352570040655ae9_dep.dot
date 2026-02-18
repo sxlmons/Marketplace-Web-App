@@ -1,0 +1,16 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/cross-spawn/lib"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_697cb3a9639b667e5111855958feb523 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="cross-spawn", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_697cb3a9639b667e5111855958feb523.html",tooltip=""]
+  subgraph clusterdir_bc065e551c5cead78352570040655ae9 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_bc065e551c5cead78352570040655ae9.html",tooltip=""]
+    dir_bc065e551c5cead78352570040655ae9 [shape=plaintext, label="lib"];
+  dir_6369af752fa98f8f02f7190536e4bc62 [label="util", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_6369af752fa98f8f02f7190536e4bc62.html",tooltip=""];
+  }
+  }
+}

@@ -1,0 +1,17 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/caniuse-lite/data"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_98a808b3f8ed2b627db6f833db8c1658 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="caniuse-lite", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_98a808b3f8ed2b627db6f833db8c1658.html",tooltip=""]
+  subgraph clusterdir_a14d90bb6794f7db14d9dd6b317f4244 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_a14d90bb6794f7db14d9dd6b317f4244.html",tooltip=""]
+    dir_a14d90bb6794f7db14d9dd6b317f4244 [shape=plaintext, label="data"];
+  dir_c11b6584f9669463385883f70b5aa536 [label="features", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_c11b6584f9669463385883f70b5aa536.html",tooltip=""];
+  dir_26f1995d2d75c8ce4ffb651004a52ffd [label="regions", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_26f1995d2d75c8ce4ffb651004a52ffd.html",tooltip=""];
+  }
+  }
+}

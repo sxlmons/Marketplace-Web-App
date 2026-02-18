@@ -1,0 +1,13 @@
+digraph "MarketPlaceBackend.Tests.Unit.Controllers.AuthControllerTests.SetUp"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  rankdir="LR";
+  Node1 [id="Node000001",label="MarketPlaceBackend.Tests.\lUnit.Controllers.AuthController\lTests.SetUp",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [id="edge1_Node000001_Node000002",color="steelblue1",style="solid",tooltip=" "];
+  Node2 [id="Node000002",label="MarketPlaceBackend.Tests.\lHelpers.TestHelper.MockSignInManager",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$class_market_place_backend_1_1_tests_1_1_helpers_1_1_test_helper.html#a55f2dcb4d7e49ac12cf5c49bb6e4a3b2",tooltip=" "];
+  Node1 -> Node3 [id="edge2_Node000001_Node000003",color="steelblue1",style="solid",tooltip=" "];
+  Node3 [id="Node000003",label="MarketPlaceBackend.Tests.\lHelpers.TestHelper.MockUserManager",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$class_market_place_backend_1_1_tests_1_1_helpers_1_1_test_helper.html#acc99478eb2aebb7d5324b8a3c17bffc0",tooltip=" "];
+}

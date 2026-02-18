@@ -1,0 +1,12 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/zod/src/v4-mini"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_917dfe93cc6c4d8b8f18c024d5710c76 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="src", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_917dfe93cc6c4d8b8f18c024d5710c76.html",tooltip=""]
+  dir_ec523d80b5d05c67d827aece5687036f [label="v4-mini", fillcolor="#edf0f7", color="grey25", style="filled,bold", URL="dir_ec523d80b5d05c67d827aece5687036f.html",tooltip=""];
+  }
+}

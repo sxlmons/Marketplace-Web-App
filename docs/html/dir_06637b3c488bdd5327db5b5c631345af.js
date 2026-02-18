@@ -1,0 +1,25 @@
+var dir_06637b3c488bdd5327db5b5c631345af =
+[
+    [ "react-dom-client.development.js", "react-dom-client_8development_8js.html", null ],
+    [ "react-dom-client.production.js", "react-dom-client_8production_8js.html", null ],
+    [ "react-dom-profiling.development.js", "react-dom-profiling_8development_8js.html", null ],
+    [ "react-dom-profiling.profiling.js", "react-dom-profiling_8profiling_8js.html", null ],
+    [ "react-dom-server-legacy.browser.development.js", "react-dom-server-legacy_8browser_8development_8js.html", null ],
+    [ "react-dom-server-legacy.browser.production.js", "react-dom-server-legacy_8browser_8production_8js.html", null ],
+    [ "react-dom-server-legacy.node.development.js", "react-dom-server-legacy_8node_8development_8js.html", null ],
+    [ "react-dom-server-legacy.node.production.js", "react-dom-server-legacy_8node_8production_8js.html", null ],
+    [ "react-dom-server.browser.development.js", "react-dom-server_8browser_8development_8js.html", null ],
+    [ "react-dom-server.browser.production.js", "react-dom-server_8browser_8production_8js.html", null ],
+    [ "react-dom-server.bun.development.js", "react-dom-server_8bun_8development_8js.html", null ],
+    [ "react-dom-server.bun.production.js", "react-dom-server_8bun_8production_8js.html", null ],
+    [ "react-dom-server.edge.development.js", "react-dom-server_8edge_8development_8js.html", null ],
+    [ "react-dom-server.edge.production.js", "react-dom-server_8edge_8production_8js.html", null ],
+    [ "react-dom-server.node.development.js", "react-dom-server_8node_8development_8js.html", null ],
+    [ "react-dom-server.node.production.js", "react-dom-server_8node_8production_8js.html", null ],
+    [ "react-dom-test-utils.development.js", "react-dom-test-utils_8development_8js.html", null ],
+    [ "react-dom-test-utils.production.js", "react-dom-test-utils_8production_8js.html", null ],
+    [ "react-dom.development.js", "react-dom_8development_8js.html", null ],
+    [ "react-dom.production.js", "react-dom_8production_8js.html", null ],
+    [ "react-dom.react-server.development.js", "react-dom_8react-server_8development_8js.html", null ],
+    [ "react-dom.react-server.production.js", "react-dom_8react-server_8production_8js.html", null ]
+];

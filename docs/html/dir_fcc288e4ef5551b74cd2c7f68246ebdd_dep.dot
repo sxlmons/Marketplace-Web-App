@@ -1,0 +1,12 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/deep-is/test"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_1349f5cc2141cd8c2ae4c4f0704bd085 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="deep-is", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_1349f5cc2141cd8c2ae4c4f0704bd085.html",tooltip=""]
+  dir_fcc288e4ef5551b74cd2c7f68246ebdd [label="test", fillcolor="#edf0f7", color="grey25", style="filled,bold", URL="dir_fcc288e4ef5551b74cd2c7f68246ebdd.html",tooltip=""];
+  }
+}

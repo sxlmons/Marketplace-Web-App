@@ -1,0 +1,22 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/@babel/core/lib"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_0bb27b0ce91df96812a49c6115334ce6 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="core", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_0bb27b0ce91df96812a49c6115334ce6.html",tooltip=""]
+  subgraph clusterdir_e1c56a77c03a50c4978c39bbf04b0f2c {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_e1c56a77c03a50c4978c39bbf04b0f2c.html",tooltip=""]
+    dir_e1c56a77c03a50c4978c39bbf04b0f2c [shape=plaintext, label="lib"];
+  dir_cc9e100afc109474a8c3b8e0e6e1b4ab [label="config", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_cc9e100afc109474a8c3b8e0e6e1b4ab.html",tooltip=""];
+  dir_598e69108292f95fc0c71da0a7219ed0 [label="errors", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_598e69108292f95fc0c71da0a7219ed0.html",tooltip=""];
+  dir_00034a989beff7f15d0b305a1daaaf6a [label="gensync-utils", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_00034a989beff7f15d0b305a1daaaf6a.html",tooltip=""];
+  dir_f9a66a78390fbefac364b114af53709c [label="parser", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_f9a66a78390fbefac364b114af53709c.html",tooltip=""];
+  dir_b620f6a61ab9e7545b960bfdbd0dd0fe [label="tools", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_b620f6a61ab9e7545b960bfdbd0dd0fe.html",tooltip=""];
+  dir_f3660e6f90db53c679df3562cd56fc5b [label="transformation", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_f3660e6f90db53c679df3562cd56fc5b.html",tooltip=""];
+  dir_d32c3b9c9f76b72ec3e96414ae2d3eac [label="vendor", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_d32c3b9c9f76b72ec3e96414ae2d3eac.html",tooltip=""];
+  }
+  }
+}
