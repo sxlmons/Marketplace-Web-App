@@ -7,7 +7,6 @@ export default function AccountProfilePage() {
 
     const [formData, setFormData] = useState({
         email: "",
-        location: "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -25,7 +24,6 @@ export default function AccountProfilePage() {
                 setFormData(prev => ({
                     ...prev,
                     email: data.email || "",
-                    location: data.location || "",
                 }));
             } catch {
                 setError("Failed to load account information");
@@ -33,15 +31,11 @@ export default function AccountProfilePage() {
                 setLoading(false);
             }
         }
-
         fetchAccount();
     }, []);
 
     function handleChange(e) {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     }
 
     async function handleSave(e) {
@@ -95,68 +89,62 @@ export default function AccountProfilePage() {
     if (!user) return <p className="center">Unable to load account</p>;
 
     return (
-        <main className="container">
-            <section className="card">
-                <h1>Account Profile</h1>
+        <main className="form-page-container">
+            <h1>Account Profile</h1>
 
-                {error && <div className="error">{error}</div>}
-                {message && <div className="success">{message}</div>}
+            {error && <div className="error">{error}</div>}
+            {message && <div className="success">{message}</div>}
 
-                <form onSubmit={handleSave} className="form">
-                    {/* Email */}
-                    <label>
-                        Email
-                        <input
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input"
-                            required
-                        />
-                    </label>
+            <form onSubmit={handleSave} className="form-container">
+                <div className="form-field">
+                    <label>Email</label>
+                    <input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-                    <hr />
+                <div className="form-separator" />
 
-                    {/* Password fields */}
-                    <label>
-                        Current Password
-                        <input
-                            name="currentPassword"
-                            type="password"
-                            value={formData.currentPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Current Password</label>
+                    <input
+                        name="currentPassword"
+                        type="password"
+                        value={formData.currentPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
-                    <label>
-                        New Password
-                        <input
-                            name="newPassword"
-                            type="password"
-                            value={formData.newPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>New Password</label>
+                    <input
+                        name="newPassword"
+                        type="password"
+                        value={formData.newPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
-                    <label>
-                        Confirm New Password
-                        <input
-                            name="confirmPassword"
-                            type="password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Confirm New Password</label>
+                    <input
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
+                <div className="form-field">
                     <button type="submit" className="button" disabled={saving}>
                         {saving ? "Saving..." : "Save Changes"}
                     </button>
-                </form>
-            </section>
+                </div>
+            </form>
         </main>
     );
 }
