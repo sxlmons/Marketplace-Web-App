@@ -51,6 +51,8 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
             _logger.LogEvent($"User {user.Id} registered successfully with email {user.Email}");
             return Ok(new { message = "Registration successful" });
         }
