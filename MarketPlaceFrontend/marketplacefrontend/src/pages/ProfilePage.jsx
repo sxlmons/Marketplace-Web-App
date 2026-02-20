@@ -44,46 +44,58 @@ export default function AccountProfilePage() {
         setError("");
         setMessage("");
 
-        let didUpdate = false;
-
         try {
-            if (formData.email !== user.email) {
-                await AuthAPI.updateEmail(formData.email);
-                didUpdate = true;
+            const { email, currentPassword, newPassword, confirmPassword } = formData;
+
+            const emailChanged = email !== user.email;
+            const isChangingPassword = newPassword || confirmPassword;
+
+            // Nothing changed
+            if (!emailChanged && !isChangingPassword) {
+                setMessage("No changes detected");
+                return;
             }
 
-            const { currentPassword, newPassword, confirmPassword } = formData;
-            if (currentPassword || newPassword || confirmPassword) {
-                if (!currentPassword || !newPassword || !confirmPassword) {
-                    throw new Error("Please fill all password fields to change password");
+            // Require current password for ANY change
+            if (!currentPassword) {
+                throw new Error("Current password is required to update account information");
+            }
+
+            // Handle password change ONLY if new password fields are used
+            if (isChangingPassword) {
+                if (!newPassword || !confirmPassword) {
+                    throw new Error("Please fill all new password fields");
                 }
                 if (newPassword !== confirmPassword) {
                     throw new Error("New password and confirmation do not match");
                 }
 
                 await AuthAPI.updatePassword(currentPassword, newPassword);
-                didUpdate = true;
-
-                setFormData(prev => ({
-                    ...prev,
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                }));
             }
 
-            if (didUpdate) {
-                setMessage("Account updated successfully");
-                setUser(prev => ({ ...prev, email: formData.email }));
-            } else {
-                setMessage("No changes detected");
+            // Handle email change
+            if (emailChanged) {
+                await AuthAPI.updateEmail(email, currentPassword);
+                setUser(prev => ({ ...prev, email }));
             }
+
+            // Clear sensitive fields
+            setFormData(prev => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
+
+            setMessage("Account updated successfully");
+
         } catch (err) {
             setError(err.message || "Failed to update account");
         } finally {
             setSaving(false);
         }
     }
+
 
     if (loading) return <p className="center">Loading account...</p>;
     if (!user) return <p className="center">Unable to load account</p>;
