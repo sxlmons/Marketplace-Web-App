@@ -111,12 +111,22 @@ export default function EditPostPage() {
                 <div className="form-field">
                     <label>Title</label>
                     <input
-                        name="title"
                         type="text"
+                        name="title"
                         value={formData.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.length <= 100) {
+                                setFormData((prev) => ({ ...prev, title: value }));
+                                setError(""); // clear previous title error
+                            } else {
+                                setError("Title cannot exceed 100 characters");
+                            }
+                        }}
+                        maxLength={100} // enforces limit at HTML level
                         required
                     />
+                    <small>{formData.title.length}/100 characters</small>
                 </div>
 
                 <div className="form-field">

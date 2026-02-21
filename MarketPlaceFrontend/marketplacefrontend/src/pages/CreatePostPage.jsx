@@ -64,9 +64,19 @@ export default function CreatePostPage() {
                     <input
                         type="text"
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.length <= 100) {
+                                setTitle(value);
+                                setError(""); // clear previous title error
+                            } else {
+                                setError("Title cannot exceed 100 characters");
+                            }
+                        }}
+                        maxLength={100} // still useful for HTML-level enforcement
                         required
                     />
+                    <small>{title.length}/100 characters</small>
                 </div>
 
                 <div className="form-field">
