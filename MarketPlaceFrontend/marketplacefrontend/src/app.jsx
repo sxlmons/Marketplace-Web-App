@@ -11,12 +11,10 @@ import EditPostPage from "./pages/EditPostPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 
-function CatchAllRedirect() {
-    return (
-        <ProtectedRoute>
-            <Navigate to="/home" replace />
-        </ProtectedRoute>
-    );
+import { AuthAPI } from "./services/api";
+
+function isLoggedIn() {
+    return AuthAPI.me();
 }
 
 function AppRoutes({ toggleTheme, currentTheme }) {
@@ -38,7 +36,7 @@ function AppRoutes({ toggleTheme, currentTheme }) {
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<CatchAllRedirect />} />
+            <Route path="*" element={isLoggedIn() ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
         </Routes>
     );
 }
