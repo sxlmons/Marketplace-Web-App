@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PostsAPI, CommentsAPI, AuthAPI } from "../services/api";
 
-const API_BASE = "http://localhost:5289/api";
-
 export default function PostDetailsPage() {
     const { postId } = useParams();
     const navigate = useNavigate();

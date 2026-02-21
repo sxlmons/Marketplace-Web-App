@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { AuthAPI } from "../services/api";
 
 export default function ProtectedRoute() {
     const [loading, setLoading] = useState(true);
@@ -8,18 +9,8 @@ export default function ProtectedRoute() {
     useEffect(() => {
         async function checkAuth() {
             try {
-                const response = await fetch(
-                    "http://localhost:5289/api/auth/me",
-                    {
-                        credentials: "include",
-                    }
-                );
-
-                if (response.ok) {
-                    setAuthenticated(true);
-                } else {
-                    setAuthenticated(false);
-                }
+                await AuthAPI.me();
+                setAuthenticated(true);
             } catch {
                 setAuthenticated(false);
             } finally {

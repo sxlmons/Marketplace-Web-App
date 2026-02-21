@@ -1,0 +1,47 @@
+﻿services:
+  db:
+    image: postgres:16
+    container_name: marketplace-db
+    environment:
+      POSTGRES_USER: team_user
+      POSTGRES_PASSWORD: team_password
+      POSTGRES_DB: marketplace
+    ports:
+      - "5560:5432"
+    volumes:
+      - marketplace_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U team_user -d marketplace"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./MarketPlaceBackend
+      dockerfile: Dockerfile
+    container_name: marketplace-backend
+    ports:
+      - "5289:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=marketplace;Username=team_user;Password=team_password"
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./MarketPlaceFrontend
+      dockerfile: Dockerfile
+    container_name: marketplace-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  marketplace_data:

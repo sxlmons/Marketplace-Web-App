@@ -1,7 +1,6 @@
 import React from "react";
 
-
-const API_BASE = "http://localhost:5289/api";
+const API_BASE = "/api";
 
 export default function PostCard({ post, onClick }) {
 
