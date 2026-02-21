@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PostsAPI, CommentsAPI, AuthAPI } from "../services/api";
+import Lightbox from "../components/LightBox";
 
 const API_BASE = "http://localhost:5289/api";
 
@@ -202,38 +203,15 @@ export default function PostDetailsPage() {
                 </section>
             </div>
             {selectedImage && (
-                <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
-                    <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="image-modal-close"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            ✕
-                        </button>
-                        <button
-                            className="image-modal-nav left"
-                            onClick={() =>
-                                setCurrentImageIndex((prev) =>
-                                    prev === 0 ? post.images.length - 1 : prev - 1
-                                )
-                            }
-                        >
-                            &lt;
-                        </button>
-                        <button
-                            className="image-modal-nav right"
-                            onClick={() =>
-                                setCurrentImageIndex((prev) =>
-                                    prev === post.images.length - 1 ? 0 : prev + 1
-                                )
-                            }
-                        >
-                            &gt;
-                        </button>
-
-                        <img src={post.images[currentImageIndex]} alt={`Image ${currentImageIndex + 1}`} />
-                    </div>
-                </div>
+                <Lightbox
+                    images={post.images}
+                    currentIndex={currentImageIndex}
+                    onClose={() => setSelectedImage(null)}
+                    onNavigate={(newIndex) => {
+                        setCurrentImageIndex(newIndex);
+                        setSelectedImage(post.images[newIndex]);
+                    }}
+                />
             )}
 
         </main>
