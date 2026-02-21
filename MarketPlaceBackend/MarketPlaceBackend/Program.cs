@@ -57,6 +57,14 @@ builder.Services.AddCors(options =>
 // [ MIDDLEWARE ]
 
 var app = builder.Build();
+
+// Auto-apply pending EF Core migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseCors("ReactDev");
 
 if (app.Environment.IsDevelopment())
