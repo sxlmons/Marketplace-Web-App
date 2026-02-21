@@ -15,6 +15,9 @@ export default function PostDetailsPage() {
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editingText, setEditingText] = useState("");
     const [error, setError] = useState("");
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
 
     useEffect(() => {
         let isMounted = true;
@@ -100,85 +103,139 @@ export default function PostDetailsPage() {
     const isOwner = currentUserId === post.userId;
 
     return (
-        <main className="container">
+        <main className="post-details-container">
             {error && <div className="error">{error}</div>}
 
-            <section className="card">
-                <div className="header-row">
-                    <h1>{post.title}</h1>
-                    {isOwner && (
-                        <div className="header-buttons">
-                            <button onClick={() => navigate(`/post/${postId}/edit`)} className="icon-button" title="Edit Post">
-                                ✏️
-                            </button>
-                            <button onClick={handleDeletePost} className="icon-button delete" title="Delete Post">
-                                ❌
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                <p>{post.description}</p>
-
-                <div className="image-grid">
-                    {post.images?.map((img, i) => (
-                        <img key={i} src={img} alt={`Post image ${i + 1}`} className="post-image" />
-                    ))}
-                </div>
-            </section>
-
-            <section className="card">
-                <h2>Comments</h2>
-
-                <form onSubmit={handleAddComment} className="comment-form">
-                    <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Leave a comment..."
-                        rows={3}
-                        className="textarea"
+            <section className="post-images-section">
+                {post.images[0] && (
+                    <img
+                        src={post.images[0]}
+                        alt="Hero"
+                        className="post-hero-image-large clickable"
+                        onClick={() => {
+                            setSelectedImage(post.images[0]);
+                            setCurrentImageIndex(0);
+                        }}
                     />
-                    <button className="button">Post Comment</button>
-                </form>
+                )}
 
-                {comments.map((comment) => {
-                    const isCommentOwner = comment.userId === currentUserId;
-                    return (
-                        <div key={comment.id} className="comment">
-                            {isCommentOwner && editingCommentId !== comment.id && (
-                                <div className="comment-top-right">
-                                    <button
-                                        onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.content); }}
-                                        className="icon-button"
-                                        title="Edit Comment"
-                                    >✏️</button>
-                                    <button
-                                        onClick={() => handleDeleteComment(comment.id)}
-                                        className="icon-button delete"
-                                        title="Delete Comment"
-                                    >❌</button>
-                                </div>
-                            )}
-
-                            {editingCommentId === comment.id ? (
-                                <>
-                                    <textarea
-                                        value={editingText}
-                                        onChange={(e) => setEditingText(e.target.value)}
-                                        className="textarea"
-                                    />
-                                    <div className="comment-actions">
-                                        <button onClick={() => handleEditComment(comment.id)} className="icon-button">💾</button>
-                                        <button onClick={() => { setEditingCommentId(null); setEditingText(""); }} className="icon-button">❌</button>
-                                    </div>
-                                </>
-                            ) : (
-                                <p>{comment.content}</p>
-                            )}
-                        </div>
-                    );
-                })}
+                {post.images.length > 1 && (
+                    <div className="post-remaining-images">
+                        {post.images.slice(1).map((img, i) => (
+                            <img
+                                key={i}
+                                src={img}
+                                alt={`Post image ${i + 2}`}
+                                className="post-remaining-image clickable"
+                                onClick={() => {
+                                    setSelectedImage(img);
+                                    setCurrentImageIndex(i + 1);
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
             </section>
+
+            <div className="post-content-wrapper">
+                <section className="post-details-text">
+                    <div className="post-title-row">
+                        <h1 className="post-title">{post.title}</h1>
+
+                        {isOwner && (
+                            <div className="post-title-buttons">
+                                <button onClick={() => navigate(`/post/${post.id}/edit`)}>Edit</button>
+                                <button className="delete-button" onClick={handleDeletePost}>Delete</button>
+                            </div>
+                        )}
+                    </div>
+
+                    <p className="post-description">{post.description}</p>
+                </section>
+                <section className="comments-section">
+                    <h2>Comments</h2>
+                    <form onSubmit={handleAddComment} className="comment-form">
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Leave a comment..."
+                            rows={1}
+                        />
+                        <button className="button">Post Comment</button>
+                    </form>
+
+                    {comments.map((comment) => {
+                        const isCommentOwner = comment.userId === currentUserId;
+                        return (
+                            <div key={comment.id} className="comment">
+                                {isCommentOwner && editingCommentId !== comment.id && (
+                                    <div className="comment-top-right">
+                                        <button
+                                            onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.content); }}
+                                            className="icon-button"
+                                            title="Edit Comment"
+                                        >✏️</button>
+                                        <button
+                                            onClick={() => handleDeleteComment(comment.id)}
+                                            className="icon-button delete"
+                                            title="Delete Comment"
+                                        >❌</button>
+                                    </div>
+                                )}
+                                {editingCommentId === comment.id ? (
+                                    <>
+                                        <textarea
+                                            value={editingText}
+                                            onChange={(e) => setEditingText(e.target.value)}
+                                        />
+                                        <div className="comment-actions">
+                                            <button onClick={() => handleEditComment(comment.id)} className="icon-button">💾</button>
+                                            <button onClick={() => { setEditingCommentId(null); setEditingText(""); }} className="icon-button">❌</button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p>{comment.content}</p>
+                                )}
+                            </div>
+                        );
+                    })}
+                </section>
+            </div>
+            {selectedImage && (
+                <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
+                    <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            className="image-modal-close"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            ✕
+                        </button>
+                        <button
+                            className="image-modal-nav left"
+                            onClick={() =>
+                                setCurrentImageIndex((prev) =>
+                                    prev === 0 ? post.images.length - 1 : prev - 1
+                                )
+                            }
+                        >
+                            &lt;
+                        </button>
+                        <button
+                            className="image-modal-nav right"
+                            onClick={() =>
+                                setCurrentImageIndex((prev) =>
+                                    prev === post.images.length - 1 ? 0 : prev + 1
+                                )
+                            }
+                        >
+                            &gt;
+                        </button>
+
+                        <img src={post.images[currentImageIndex]} alt={`Image ${currentImageIndex + 1}`} />
+                    </div>
+                </div>
+            )}
+
         </main>
     );
 }

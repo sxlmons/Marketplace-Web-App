@@ -7,7 +7,6 @@ export default function AccountProfilePage() {
 
     const [formData, setFormData] = useState({
         email: "",
-        location: "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -25,7 +24,6 @@ export default function AccountProfilePage() {
                 setFormData(prev => ({
                     ...prev,
                     email: data.email || "",
-                    location: data.location || "",
                 }));
             } catch {
                 setError("Failed to load account information");
@@ -33,15 +31,11 @@ export default function AccountProfilePage() {
                 setLoading(false);
             }
         }
-
         fetchAccount();
     }, []);
 
     function handleChange(e) {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     }
 
     async function handleSave(e) {
@@ -50,40 +44,51 @@ export default function AccountProfilePage() {
         setError("");
         setMessage("");
 
-        let didUpdate = false;
-
         try {
-            if (formData.email !== user.email) {
-                await AuthAPI.updateEmail(formData.email);
-                didUpdate = true;
+            const { email, currentPassword, newPassword, confirmPassword } = formData;
+
+            const emailChanged = email !== user.email;
+            const isChangingPassword = newPassword || confirmPassword;
+
+            // Nothing changed
+            if (!emailChanged && !isChangingPassword) {
+                setMessage("No changes detected");
+                return;
             }
 
-            const { currentPassword, newPassword, confirmPassword } = formData;
-            if (currentPassword || newPassword || confirmPassword) {
-                if (!currentPassword || !newPassword || !confirmPassword) {
-                    throw new Error("Please fill all password fields to change password");
+            // Require current password for ANY change
+            if (!currentPassword) {
+                throw new Error("Current password is required to update account information");
+            }
+
+            // Handle password change ONLY if new password fields are used
+            if (isChangingPassword) {
+                if (!newPassword || !confirmPassword) {
+                    throw new Error("Please fill all new password fields");
                 }
                 if (newPassword !== confirmPassword) {
                     throw new Error("New password and confirmation do not match");
                 }
 
                 await AuthAPI.updatePassword(currentPassword, newPassword);
-                didUpdate = true;
-
-                setFormData(prev => ({
-                    ...prev,
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                }));
             }
 
-            if (didUpdate) {
-                setMessage("Account updated successfully");
-                setUser(prev => ({ ...prev, email: formData.email }));
-            } else {
-                setMessage("No changes detected");
+            // Handle email change
+            if (emailChanged) {
+                await AuthAPI.updateEmail(email, currentPassword);
+                setUser(prev => ({ ...prev, email }));
             }
+
+            // Clear sensitive fields
+            setFormData(prev => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
+
+            setMessage("Account updated successfully");
+
         } catch (err) {
             setError(err.message || "Failed to update account");
         } finally {
@@ -91,72 +96,67 @@ export default function AccountProfilePage() {
         }
     }
 
+
     if (loading) return <p className="center">Loading account...</p>;
     if (!user) return <p className="center">Unable to load account</p>;
 
     return (
-        <main className="container">
-            <section className="card">
-                <h1>Account Profile</h1>
+        <main className="form-page-container">
+            <h1>Account Profile</h1>
 
-                {error && <div className="error">{error}</div>}
-                {message && <div className="success">{message}</div>}
+            {error && <div className="error">{error}</div>}
+            {message && <div className="success">{message}</div>}
 
-                <form onSubmit={handleSave} className="form">
-                    {/* Email */}
-                    <label>
-                        Email
-                        <input
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input"
-                            required
-                        />
-                    </label>
+            <form onSubmit={handleSave} className="form-container">
+                <div className="form-field">
+                    <label>Email</label>
+                    <input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-                    <hr />
+                <div className="form-separator" />
 
-                    {/* Password fields */}
-                    <label>
-                        Current Password
-                        <input
-                            name="currentPassword"
-                            type="password"
-                            value={formData.currentPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Current Password</label>
+                    <input
+                        name="currentPassword"
+                        type="password"
+                        value={formData.currentPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
-                    <label>
-                        New Password
-                        <input
-                            name="newPassword"
-                            type="password"
-                            value={formData.newPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>New Password</label>
+                    <input
+                        name="newPassword"
+                        type="password"
+                        value={formData.newPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
-                    <label>
-                        Confirm New Password
-                        <input
-                            name="confirmPassword"
-                            type="password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Confirm New Password</label>
+                    <input
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                    />
+                </div>
 
+                <div className="form-field">
                     <button type="submit" className="button" disabled={saving}>
                         {saving ? "Saving..." : "Save Changes"}
                     </button>
-                </form>
-            </section>
+                </div>
+            </form>
         </main>
     );
 }

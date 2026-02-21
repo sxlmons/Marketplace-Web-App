@@ -15,6 +15,7 @@ export default function EditPostPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
+
     useEffect(() => {
         let isMounted = true;
 
@@ -35,23 +36,32 @@ export default function EditPostPage() {
             }
         })();
 
-        return () => {
-            isMounted = false;
-        };
+        return () => (isMounted = false);
     }, [postId]);
 
     function handleChange(e) {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     }
 
     function handleImageUpload(e) {
         const files = Array.from(e.target.files);
+
+        if (files.length + formData.images.length > 5) {
+            setError("Maximum 5 images allowed");
+            return;
+        }
+
         setFormData((prev) => ({
             ...prev,
             images: [...prev.images, ...files],
+        }));
+        setError("");
+    }
+
+    function removeImage(index) {
+        setFormData((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index),
         }));
     }
 
@@ -66,9 +76,7 @@ export default function EditPostPage() {
             fd.append("Description", formData.description);
 
             formData.images.forEach((img) => {
-                if (img instanceof File) {
-                    fd.append("Images", img);
-                }
+                if (img instanceof File) fd.append("Images", img);
             });
 
             await PostsAPI.update(postId, fd);
@@ -94,47 +102,82 @@ export default function EditPostPage() {
     if (loading) return <p className="center">Loading post...</p>;
 
     return (
-        <main className="container">
-            {error && <div className="error">{error}</div>}
-
+        <main className="form-page-container">
             <h1>Edit Post</h1>
 
-            <form onSubmit={handleSubmit} className="form">
-                <label>Title</label>
-                <input
-                    name="title"
-                    type="text"
-                    value={formData.title}
-                    onChange={handleChange}
-                    className="input"
-                />
+            {error && <div className="error">{error}</div>}
 
-                <label>Description</label>
-                <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="textarea"
-                    rows={5}
-                />
+            <form onSubmit={handleSubmit} className="form-container">
+                <div className="form-field">
+                    <label>Title</label>
+                    <input
+                        name="title"
+                        type="text"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-                <label>Images</label>
-                <input
-                    type="file"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="input"
-                />
+                <div className="form-field">
+                    <label>Description</label>
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows={4}
+                        required
+                    />
+                </div>
 
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-                    <button type="submit" className="button" disabled={saving}>
+                <div className="form-field">
+                    <label>Images (max 5)</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
+
+                    {formData.images.length > 0 && (
+                        <div className="image-previews-container">
+                            {formData.images.map((img, i) => (
+                                <div key={i} className="image-preview-wrapper">
+                                    <img
+                                        src={
+                                            img instanceof File
+                                                ? URL.createObjectURL(img)
+                                                : img
+                                        }
+                                        alt={`Preview ${i + 1}`}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="remove-image-button"
+                                        onClick={() => removeImage(i)}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="form-field" style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                        type="submit"
+                        className="button"
+                        disabled={saving}
+                        style={{ flex: 1 }}
+                    >
                         {saving ? "Saving..." : "Save"}
                     </button>
                     <button
                         type="button"
-                        onClick={handleDelete}
                         className="button"
-                        style={{ backgroundColor: "#dc3545" }}
+                        onClick={handleDelete}
+                        style={{ flex: 1, backgroundColor: "var(--danger-color)" }}
                     >
                         Delete
                     </button>

@@ -2,29 +2,74 @@ import React, { useState } from "react";
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
-        username: "",
         email: "",
         password: "",
         confirmPassword: "",
-        location: "",
     });
 
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        general: "",
+    });
+
+    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validatePassword(password) {
+        return {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*-]/.test(password),
+        };
+    }
+
     function handleChange(e) {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        // After first submit attempt, clear field error as user edits
+        if (submitted) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
+        }
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError("");
+        setSubmitted(true);
+        setErrors((prev) => ({ ...prev, general: "" }));
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
+        const passwordChecks = validatePassword(formData.password);
+        const isPasswordValid = Object.values(passwordChecks).every(Boolean);
+        const isEmailValid = validateEmail(formData.email);
+        const doPasswordsMatch =
+            formData.password === formData.confirmPassword;
+
+        if (!isEmailValid || !isPasswordValid || !doPasswordsMatch) {
+            setErrors({
+                email: !isEmailValid ? "Invalid email format" : "",
+                password: !isPasswordValid
+                    ? "Password does not meet requirements"
+                    : "",
+                confirmPassword: !doPasswordsMatch
+                    ? "Passwords do not match"
+                    : "",
+                general: "Please fix the errors below",
+            });
             return;
         }
 
@@ -53,11 +98,16 @@ export default function RegisterPage() {
 
             window.location.href = "/home";
         } catch (err) {
-            setError(err.message);
+            setErrors((prev) => ({
+                ...prev,
+                general: err.message,
+            }));
         } finally {
             setLoading(false);
         }
     }
+
+    const passwordChecks = validatePassword(formData.password);
 
     return (
         <main style={styles.container}>
@@ -65,19 +115,24 @@ export default function RegisterPage() {
                 <h1>Create Account</h1>
                 <p>Join the marketplace</p>
 
-                {error && <div style={styles.error}>{error}</div>}
+                {errors.general && (
+                    <div style={styles.error}>{errors.general}</div>
+                )}
 
                 <label style={styles.label}>
                     Email
                     <input
                         name="email"
                         type="email"
-                        required
                         value={formData.email}
                         onChange={handleChange}
                         style={styles.input}
-                        autoComplete="email"
                     />
+                    {submitted && errors.email && (
+                        <span style={styles.fieldError}>
+                            {errors.email}
+                        </span>
+                    )}
                 </label>
 
                 <label style={styles.label}>
@@ -85,12 +140,37 @@ export default function RegisterPage() {
                     <input
                         name="password"
                         type="password"
-                        required
                         value={formData.password}
                         onChange={handleChange}
                         style={styles.input}
-                        autoComplete="new-password"
                     />
+
+                    {/* Show checklist only after failed submit */}
+                    {submitted && errors.password && (
+                        <ul style={styles.passwordList}>
+                            <li style={{ color: passwordChecks.length ? "green" : "red" }}>
+                                At least 8 characters
+                            </li>
+                            <li style={{ color: passwordChecks.uppercase ? "green" : "red" }}>
+                                One uppercase letter
+                            </li>
+                            <li style={{ color: passwordChecks.lowercase ? "green" : "red" }}>
+                                One lowercase letter
+                            </li>
+                            <li style={{ color: passwordChecks.number ? "green" : "red" }}>
+                                One number
+                            </li>
+                            <li style={{ color: passwordChecks.special ? "green" : "red" }}>
+                                One special character (!@#$%^&*-)
+                            </li>
+                        </ul>
+                    )}
+
+                    {submitted && errors.password && (
+                        <span style={styles.fieldError}>
+                            {errors.password}
+                        </span>
+                    )}
                 </label>
 
                 <label style={styles.label}>
@@ -98,28 +178,20 @@ export default function RegisterPage() {
                     <input
                         name="confirmPassword"
                         type="password"
-                        required
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         style={styles.input}
-                        autoComplete="new-password"
                     />
+                    {submitted && errors.confirmPassword && (
+                        <span style={styles.fieldError}>
+                            {errors.confirmPassword}
+                        </span>
+                    )}
                 </label>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={styles.button}
-                >
+                <button type="submit" disabled={loading} style={styles.button}>
                     {loading ? "Creating account..." : "Create Account"}
                 </button>
-
-                <div style={styles.footer}>
-                    <span>Already have an account?</span>
-                    <a href="/login" style={styles.link}>
-                        Log in
-                    </a>
-                </div>
             </form>
         </main>
     );
@@ -163,21 +235,22 @@ const styles = {
         borderRadius: "4px",
         cursor: "pointer",
     },
-    footer: {
-        marginTop: "1rem",
-        textAlign: "center",
-    },
-    link: {
-        marginLeft: "0.25rem",
-        color: "#007bff",
-        textDecoration: "none",
-        fontWeight: "bold",
-    },
     error: {
         marginBottom: "1rem",
         color: "#b00020",
         backgroundColor: "#fdecea",
         padding: "0.5rem",
         borderRadius: "4px",
+    },
+    fieldError: {
+        display: "block",
+        marginTop: "0.25rem",
+        fontSize: "0.85rem",
+        color: "#b00020",
+    },
+    passwordList: {
+        marginTop: "0.5rem",
+        paddingLeft: "1rem",
+        fontSize: "0.85rem",
     },
 };

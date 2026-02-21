@@ -57,15 +57,15 @@ builder.Services.AddCors(options =>
 // [ MIDDLEWARE ]
 
 var app = builder.Build();
+app.UseCors("ReactDev");
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("ReactDev");
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

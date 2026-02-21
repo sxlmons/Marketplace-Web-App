@@ -52,65 +52,73 @@ export default function CreatePostPage() {
     }
 
     return (
-        <main className="container">
-            <section className="card">
-                <h1>Create New Post</h1>
+        <main className="form-page-container">
+            <h1>Create New Post</h1>
 
-                {error && <div className="error">{error}</div>}
-                {success && <div className="success">{success}</div>}
+            {error && <div className="error">{error}</div>}
+            {success && <div className="success">{success}</div>}
 
-                <form onSubmit={handleSubmit} className="form">
-                    <label>
-                        Title
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="input"
-                            required
-                        />
-                    </label>
+            <form onSubmit={handleSubmit} className="form-container">
+                <div className="form-field">
+                    <label>Title</label>
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                    />
+                </div>
 
-                    <label>
-                        Description
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="textarea"
-                            rows={4}
-                            required
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Description</label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={4}
+                        required
+                    />
+                </div>
 
-                    <label>
-                        Images (max 5)
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="input"
-                        />
-                    </label>
+                <div className="form-field">
+                    <label>Images (max 5)</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
 
                     {images.length > 0 && (
-                        <div className="image-previews">
+                        <div className="image-previews-container">
                             {images.map((file, i) => (
-                                <img
-                                    key={i}
-                                    src={URL.createObjectURL(file)}
-                                    alt={`Preview ${i + 1}`}
-                                    className="image-preview"
-                                />
+                                <div key={i} className="image-preview-wrapper">
+                                    <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`Preview ${i + 1}`}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="remove-image-button"
+                                        onClick={() =>
+                                            setImages((prev) =>
+                                                prev.filter((_, index) => index !== i)
+                                            )
+                                        }
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     )}
+                </div>
 
+                <div className="form-field">
                     <button type="submit" className="button" disabled={loading}>
                         {loading ? "Creating..." : "Create Post"}
                     </button>
-                </form>
-            </section>
+                </div>
+            </form>
         </main>
     );
 }

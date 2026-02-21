@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace MarketPlaceBackend.Tests.Unit.Controllers;
 
@@ -407,6 +408,8 @@ public class AuthControllerTests
     [Test]
     public async Task UpdateEmail_WhenUserIdNull_ReturnsUnauthorized()
     {
+        TestHelper.SetEmptyUserContext(_controller);
+            
         var result = await _controller.UpdateEmail(new UpdateEmailRequest
         {
             NewEmail = "new@test.com"

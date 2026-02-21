@@ -24,26 +24,92 @@ public class AuthIntegrationTests
         _client.Dispose();
         _factory.Dispose();
     }
-
+    
     [Test]
     public async Task Register_ThenLogin_Succeeds()
     {
-        // Register 
-        await _client.PostAsJsonAsync("/api/auth/register",
-            new RegisterRequest
-            {
-                Email = "test@test.com",
-                Password = "ValidPass1!"
-            });
+        var email = $"{Guid.NewGuid()}@test.com";
 
-        // Login with those same credentials
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = email, Password = "ValidPass1!" });
+
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new LoginRequest
-            {
-                Email = "test@test.com",
-                Password = "ValidPass1!"
-            });
+            new LoginRequest { Email = email, Password = "ValidPass1!" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
     }
+    
+    [Test]
+    public async Task Login_ThenMe_ReturnsUserInfo()
+    {
+        // Register
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Login
+        await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Me
+        var response = await _client.GetAsync("/api/auth/me");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
+
+    [Test]
+    public async Task Login_ThenLogout_ThenMe_ReturnsUnauthorized()
+    {
+        // Register
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Login
+        await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Logout
+        await _client.PostAsync("/api/auth/logout", null);
+
+        // Me
+        var response = await _client.GetAsync("/api/auth/me");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task Login_ThenUpdateEmail_Succeeds()
+    {
+        // Register
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Login
+        await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Update email
+        var response = await _client.PatchAsJsonAsync("/api/auth/updateemail",
+            new UpdateEmailRequest { NewEmail = "updated@test.com" });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
+
+    [Test]
+    public async Task Login_ThenUpdatePassword_Succeeds()
+    {
+        // Register
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Login
+        await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest { Email = "test@test.com", Password = "ValidPass1!" });
+
+        // Update password
+        var response = await _client.PatchAsJsonAsync("/api/auth/updatepassword",
+            new UpdatePasswordRequest { CurrentPassword = "ValidPass1!", NewPassword = "NewPass1!" });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
+
 }

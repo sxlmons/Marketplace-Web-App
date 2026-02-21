@@ -11,6 +11,14 @@ import EditPostPage from "./pages/EditPostPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 
+function CatchAllRedirect() {
+    return (
+        <ProtectedRoute>
+            <Navigate to="/home" replace />
+        </ProtectedRoute>
+    );
+}
+
 function AppRoutes({ toggleTheme, currentTheme }) {
     return (
         <Routes>
@@ -29,11 +37,8 @@ function AppRoutes({ toggleTheme, currentTheme }) {
                 </Route>
             </Route>
 
-            {/* Default Redirect */}
-            <Route path="/" element={<Navigate to="/home" replace />} />
-
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<CatchAllRedirect />} />
         </Routes>
     );
 }

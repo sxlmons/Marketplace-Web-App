@@ -80,29 +80,23 @@ export default function HomePage() {
                         className="post-card"
                         onClick={() => navigate(`/post/${post.id}`)}
                     >
-                        <div className="post-title">{post.title}</div>
-                        <div>{post.description}</div>
-
-                        { }
                         {post.images?.length > 0 && (
-                            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
-                                {post.images.map((img, i) => (
-                                    <img
-                                        key={i}
-                                        src={img}
-                                        alt={`Post ${post.id} image ${i + 1}`}
-                                        style={{ width: 150, height: 150, objectFit: "cover", borderRadius: 4 }}
-                                    />
-                                ))}
-                            </div>
+                            <img
+                                src={post.images[0]}
+                                alt={`Post ${post.id} hero`}
+                                className="post-hero-image"
+                            />
                         )}
+
+                        <div className="post-title">{post.title}</div>
+                        <div className="post-description">{post.description}</div>
                     </div>
                 ))}
-
 
                 {loading && <p>Loading...</p>}
                 {!hasMore && <p>No more posts</p>}
             </main>
+
         </>
     );
 }

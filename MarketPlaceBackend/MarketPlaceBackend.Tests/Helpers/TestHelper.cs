@@ -51,4 +51,12 @@ public static class TestHelper
             HttpContext = new DefaultHttpContext { User = principal }
         };
     }
+    
+    public static void SetEmptyUserContext(ControllerBase controller)
+    {
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+    }
 }
