@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostsAPI } from "../services/api";
 
-const API_BASE = "http://localhost:5289/api"
-
 const PAGE_SIZE = 10;
 
 export default function HomePage() {
