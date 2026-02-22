@@ -68,12 +68,12 @@ export default function CreatePostPage() {
                             const value = e.target.value;
                             if (value.length <= 100) {
                                 setTitle(value);
-                                setError(""); // clear previous title error
+                                setError("");
                             } else {
                                 setError("Title cannot exceed 100 characters");
                             }
                         }}
-                        maxLength={100} // still useful for HTML-level enforcement
+                        maxLength={100}
                         required
                     />
                     <small>{title.length}/100 characters</small>
@@ -124,7 +124,7 @@ export default function CreatePostPage() {
                 </div>
 
                 <div className="form-field">
-                    <button type="submit" className="button" disabled={loading}>
+                    <button type="submit" className="icon-button btn-primary" disabled={loading}>
                         {loading ? "Creating..." : "Create Post"}
                     </button>
                 </div>

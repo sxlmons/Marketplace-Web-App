@@ -245,7 +245,7 @@ export default function PostDetailsPage() {
                         setCurrentImageIndex(newIndex);
                         setSelectedImage(post.images[newIndex]);
                     }}
-                    navClassName="image-modal-nav" // keep original styling
+                    navClassName="image-modal-nav"
                     overlayClassName="image-modal-overlay"
                     closeClassName="image-modal-close"
                 />
