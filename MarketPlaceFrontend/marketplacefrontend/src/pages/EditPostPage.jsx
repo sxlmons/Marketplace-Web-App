@@ -177,7 +177,7 @@ export default function EditPostPage() {
                 <div className="form-field" style={{ display: "flex", gap: "0.5rem" }}>
                     <button
                         type="submit"
-                        className="button"
+                        className="btn-primary"
                         disabled={saving}
                         style={{ flex: 1 }}
                     >
@@ -185,7 +185,7 @@ export default function EditPostPage() {
                     </button>
                     <button
                         type="button"
-                        className="button"
+                        className="btn-delete"
                         onClick={handleDelete}
                         style={{ flex: 1, backgroundColor: "var(--danger-color)" }}
                     >

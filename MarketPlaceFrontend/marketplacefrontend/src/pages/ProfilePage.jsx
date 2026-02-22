@@ -152,7 +152,7 @@ export default function AccountProfilePage() {
                 </div>
 
                 <div className="form-field">
-                    <button type="submit" className="icon-button btn-primary" disabled={saving}>
+                    <button type="submit" className="btn-primary" disabled={saving}>
                         {saving ? "Saving..." : "Save Changes"}
                     </button>
                 </div>

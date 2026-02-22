@@ -124,7 +124,7 @@ export default function CreatePostPage() {
                 </div>
 
                 <div className="form-field">
-                    <button type="submit" className="icon-button btn-primary" disabled={loading}>
+                    <button type="submit" className="btn-primary" disabled={loading}>
                         {loading ? "Creating..." : "Create Post"}
                     </button>
                 </div>
