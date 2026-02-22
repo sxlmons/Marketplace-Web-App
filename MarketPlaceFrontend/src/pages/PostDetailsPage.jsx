@@ -3,8 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PostsAPI, CommentsAPI, AuthAPI } from "../services/api";
 import Lightbox from "../components/LightBox";
 
-const API_BASE = "http://localhost:5289/api";
-
 export default function PostDetailsPage() {
     const { postId } = useParams();
     const navigate = useNavigate();

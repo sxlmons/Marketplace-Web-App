@@ -34,6 +34,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None; 
+    options.Cookie.Path = "/";
     options.ExpireTimeSpan = TimeSpan.FromHours(24);
     options.Events.OnRedirectToLogin = context =>
     {
@@ -57,6 +60,14 @@ builder.Services.AddCors(options =>
 // [ MIDDLEWARE ]
 
 var app = builder.Build();
+
+// Auto-apply pending EF Core migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseCors("ReactDev");
 
 if (app.Environment.IsDevelopment())

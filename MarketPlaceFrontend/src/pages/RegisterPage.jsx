@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AuthAPI } from "../services/api";
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -76,25 +77,10 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const response = await fetch(
-                "http://localhost:5289/api/auth/register",
-                {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: formData.email,
-                        password: formData.password,
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || "Registration failed");
-            }
+            await AuthAPI.register({
+                email: formData.email,
+                password: formData.password,
+            });
 
             window.location.href = "/home";
         } catch (err) {
