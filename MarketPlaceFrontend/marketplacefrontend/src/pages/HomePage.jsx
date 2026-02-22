@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostsAPI } from "../services/api";
 
-const API_BASE = "http://localhost:5289/api"
-
+const API_BASE = "http://localhost:5289/api";
 const PAGE_SIZE = 10;
 
 export default function HomePage() {
@@ -14,47 +13,52 @@ export default function HomePage() {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
+    // Fetch posts when limit changes
     useEffect(() => {
         let cancelled = false;
 
         async function fetchPosts() {
+            if (!hasMore) return;
+
             setLoading(true);
 
             try {
                 const data = await PostsAPI.getLatestPosts(limit);
 
                 if (!cancelled) {
-
-                    data.forEach(post => {
+                    const postsWithImages = data.map(post => {
                         const images = [];
                         for (let i = 1; i <= post.photoCount; i++) {
                             images.push(`${API_BASE}/Image/GetPhotoForPost?postId=${post.id}&imageId=${i}`);
                         }
-                        post.images = images;
+                        return { ...post, images };
                     });
 
-                    setPosts(data);
+                    setPosts(prevPosts => {
+                        // Only add posts we haven't already loaded
+                        const newPosts = postsWithImages.filter(
+                            p => !prevPosts.some(existing => existing.id === p.id)
+                        );
 
-                    if (data.length < limit) {
-                        setHasMore(false);
-                    }
+                        // Stop infinite scroll if we got less than PAGE_SIZE new posts
+                        if (newPosts.length < PAGE_SIZE) setHasMore(false);
+
+                        return [...prevPosts, ...newPosts];
+                    });
                 }
             } catch (err) {
                 console.error(err);
-            }
-
-            if (!cancelled) {
-                setLoading(false);
+            } finally {
+                if (!cancelled) setLoading(false);
             }
         }
 
         fetchPosts();
 
-        return () => {
-            cancelled = true;
-        };
-    }, [limit]);
+        return () => { cancelled = true; };
+    }, [limit, hasMore]);
 
+    // Infinite scroll listener
     useEffect(() => {
         function handleScroll() {
             if (
@@ -63,7 +67,7 @@ export default function HomePage() {
                 !loading &&
                 hasMore
             ) {
-                setLimit((prev) => prev + PAGE_SIZE);
+                setLimit(prev => prev + PAGE_SIZE); // Load next "page"
             }
         }
 
@@ -72,31 +76,27 @@ export default function HomePage() {
     }, [loading, hasMore]);
 
     return (
-        <>
-            <main className="container">
-                {posts.map((post) => (
-                    <div
-                        key={post.id}
-                        className="post-card"
-                        onClick={() => navigate(`/post/${post.id}`)}
-                    >
-                        {post.images?.length > 0 && (
-                            <img
-                                src={post.images[0]}
-                                alt={`Post ${post.id} hero`}
-                                className="post-hero-image"
-                            />
-                        )}
+        <main className="container">
+            {posts.map(post => (
+                <div
+                    key={post.id}
+                    className="post-card"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                >
+                    {post.images?.length > 0 && (
+                        <img
+                            src={post.images[0]}
+                            alt={`Post ${post.id} hero`}
+                            className="post-hero-image"
+                        />
+                    )}
+                    <div className="post-title">{post.title}</div>
+                    <div className="post-description">{post.description}</div>
+                </div>
+            ))}
 
-                        <div className="post-title">{post.title}</div>
-                        <div className="post-description">{post.description}</div>
-                    </div>
-                ))}
-
-                {loading && <p>Loading...</p>}
-                {!hasMore && <p>No more posts</p>}
-            </main>
-
-        </>
+            {loading && <p>Loading...</p>}
+            {!hasMore && <p>No more posts</p>}
+        </main>
     );
 }
