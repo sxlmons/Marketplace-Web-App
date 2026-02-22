@@ -225,6 +225,8 @@ input, textarea, select {
     gap: 0.5rem;
     overflow-y: auto;
     min-height: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .comment-form {

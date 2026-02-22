@@ -52,6 +52,18 @@ export default function PostDetailsPage() {
         return () => { isMounted = false; };
     }, [postId]);
 
+    useEffect(() => {
+        function handleKeyDown(e) {
+            if (e.key === "Escape" && editingCommentId !== null) {
+                setEditingCommentId(null);
+                setEditingText("");
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [editingCommentId]);
+
     async function handleDeletePost() {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
         try {
@@ -175,12 +187,12 @@ export default function PostDetailsPage() {
                                             onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.content); }}
                                             className="icon-button"
                                             title="Edit Comment"
-                                        >✏️</button>
+                                        >Edit</button>
                                         <button
                                             onClick={() => handleDeleteComment(comment.id)}
                                             className="icon-button delete"
                                             title="Delete Comment"
-                                        >❌</button>
+                                        >Delete</button>
                                     </div>
                                 )}
                                 {editingCommentId === comment.id ? (
@@ -190,8 +202,8 @@ export default function PostDetailsPage() {
                                             onChange={(e) => setEditingText(e.target.value)}
                                         />
                                         <div className="comment-actions">
-                                            <button onClick={() => handleEditComment(comment.id)} className="icon-button">💾</button>
-                                            <button onClick={() => { setEditingCommentId(null); setEditingText(""); }} className="icon-button">❌</button>
+                                            <button onClick={() => handleEditComment(comment.id)} className="icon-button">Save</button>
+                                            <button onClick={() => { setEditingCommentId(null); setEditingText(""); }} className="icon-button">Cancel</button>
                                         </div>
                                     </>
                                 ) : (
