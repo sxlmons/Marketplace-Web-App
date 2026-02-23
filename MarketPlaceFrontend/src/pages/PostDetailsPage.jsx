@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PostsAPI, CommentsAPI, AuthAPI } from "../services/api";
+import { PostsAPI, CommentsAPI, AuthAPI, ImagesAPI } from "../services/api";
 import Lightbox from "../components/LightBox";
+
 
 export default function PostDetailsPage() {
     const { postId } = useParams();
@@ -26,8 +27,15 @@ export default function PostDetailsPage() {
                 if (!isMounted) return;
 
                 const images = [];
+
                 for (let i = 1; i <= postData.photoCount; i++) {
-                    images.push(`${API_BASE}/image/GetPhotoForPost?postId=${postData.id}&imageId=${i}`);
+                    try {
+                        const blob = await ImagesAPI.getPhotoForPost(postData.id, i);
+                        const url = URL.createObjectURL(blob);
+                        images.push(url);
+                    } catch (err){
+                        setError(err.message);                       
+                    }
                 }
 
                 setPost({ ...postData, images });
@@ -108,6 +116,14 @@ export default function PostDetailsPage() {
             setError(err.message);
         }
     }
+
+    useEffect(() => {
+        return () => {
+            if (post?.images) {
+                post.images.forEach(url => URL.revokeObjectURL(url));
+            }
+        };
+    }, [post]);
 
     if (!post) return <p>Loading post...</p>;
 
