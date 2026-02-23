@@ -35,12 +35,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     options.Cookie.Path = "/";
     options.ExpireTimeSpan = TimeSpan.FromHours(24);
     options.Events.OnRedirectToLogin = context =>
     {
         context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403;
         return Task.CompletedTask;
     };
 });
@@ -64,8 +69,11 @@ var app = builder.Build();
 // Auto-apply pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    if (db.Database.IsRelational())
+    {
+        db.Database.Migrate();
+    }
 }
 
 app.UseCors("ReactDev");

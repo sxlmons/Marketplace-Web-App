@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Security.Claims;
+using MarketPlaceBackend.DTOs;
 
 namespace MarketPlaceBackend.Tests.Helpers;
 
 public static class TestHelper
 {
+    // UNIT TEST HELPERS
+
     // UserManager requires an IUserStore in its constructor.
     // We mock both the store and the manager itself so we can
     // control what methods like CreateAsync return.
@@ -51,12 +56,47 @@ public static class TestHelper
             HttpContext = new DefaultHttpContext { User = principal }
         };
     }
-    
+
     public static void SetEmptyUserContext(ControllerBase controller)
     {
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
         };
+    }
+
+    // INTEGRATION TEST HELPERS
+
+    // Registers and logs in a user so the HttpClient
+    // has an auth cookie for subsequent requests.
+    public static async Task RegisterAndLogin(
+        HttpClient client,
+        string email = "test@test.com",
+        string password = "ValidPass1!")
+    {
+        await client.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest { Email = email, Password = password });
+
+        await client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest { Email = email, Password = password });
+    }
+
+    // Creates a post via multipart form data and returns
+    // the postId from the JSON response. Requires the
+    // client to already be authenticated.
+    public static async Task<int> CreatePostAndGetId(
+        HttpClient client,
+        string title = "Test Post",
+        string description = "Test Description")
+    {
+        var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent(title), "Title");
+        formContent.Add(new StringContent(description), "Description");
+
+        var response = await client.PostAsync("/api/post/createnewpost", formContent);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        return json.GetProperty("postId").GetInt32();
     }
 }
