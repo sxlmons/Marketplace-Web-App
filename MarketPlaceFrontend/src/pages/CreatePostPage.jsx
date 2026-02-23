@@ -90,38 +90,38 @@ export default function CreatePostPage() {
                 </div>
 
                 <div className="form-field">
-                    <label>Images (max 5)</label>
-                    <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                    />
+    <label>Images (max 5)</label>
+    <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={handleImageUpload}
+    />
 
-                    {images.length > 0 && (
-                        <div className="image-previews-container">
-                            {images.map((file, i) => (
-                                <div key={i} className="image-preview-wrapper">
-                                    <img
-                                        src={URL.createObjectURL(file)}
-                                        alt={`Preview ${i + 1}`}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="remove-image-button"
-                                        onClick={() =>
-                                            setImages((prev) =>
-                                                prev.filter((_, index) => index !== i)
-                                            )
-                                        }
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+    {images.length > 0 && (
+        <div className="image-previews-row">
+            {images.map((file, i) => (
+                <div key={i} className="image-preview-wrapper">
+                    <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${i + 1}`}
+                    />
+                    <button
+                        type="button"
+                        className="remove-image-button"
+                        onClick={() =>
+                            setImages((prev) =>
+                                prev.filter((_, index) => index !== i)
+                            )
+                        }
+                    >
+                        &times;
+                    </button>
                 </div>
+            ))}
+        </div>
+    )}
+</div>
 
                 <div className="form-field">
                     <button type="submit" className="btn-primary" disabled={loading}>
