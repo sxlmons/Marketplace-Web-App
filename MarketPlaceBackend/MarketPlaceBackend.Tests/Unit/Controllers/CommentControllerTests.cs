@@ -1,35 +1,20 @@
-﻿using System.Security.Claims;
-using MarketPlaceBackend.Controllers;
+﻿using MarketPlaceBackend.Controllers;
 using MarketPlaceBackend.Data;
 using MarketPlaceBackend.DTOs;
 using MarketPlaceBackend.Models;
-using Microsoft.AspNetCore.Http;
+using MarketPlaceBackend.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 
 namespace MarketPlaceBackend.Tests.Unit.Controllers;
 
+[TestFixture]
 public class CommentControllerTests
 {
     private ApplicationDbContext _context;
     private CommentController _controller;
     private Mock<ILogger> _mockLogger;
-
-    private void SetUser(string userId)
-    {
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId)
-        }, "mock"));
-
-        _controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext { User = user }
-        };
-    }
 
     private Comments SeedComment(int id, string userId, int postId, string content)
     {
@@ -49,7 +34,7 @@ public class CommentControllerTests
     }
 
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -58,6 +43,16 @@ public class CommentControllerTests
         _context = new ApplicationDbContext(options);
         _mockLogger = new Mock<ILogger>();
         _controller = new CommentController(_context, _mockLogger.Object);
+
+        // Default empty user context so User is never null.
+        // Tests that need auth will call TestHelper.SetUserClaims.
+        TestHelper.SetEmptyUserContext(_controller);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _context.Dispose();
     }
 
     // =====================================================
@@ -71,14 +66,14 @@ public class CommentControllerTests
 
         var result = await _controller.CreateNewComment(dto);
 
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
-        Assert.AreEqual(0, _context.Comments.Count());
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        Assert.That(_context.Comments.Count(), Is.EqualTo(0));
     }
 
     [Test]
     public async Task CreateNewComment_SavesCorrectValues()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         var dto = new CommentDTO { PostId = 5, Content = "Hello" };
 
@@ -86,38 +81,38 @@ public class CommentControllerTests
 
         var saved = _context.Comments.First();
 
-        Assert.AreEqual("user1", saved.UserId);
-        Assert.AreEqual(5, saved.PostId);
-        Assert.AreEqual("Hello", saved.Content);
+        Assert.That(saved.UserId, Is.EqualTo("user1"));
+        Assert.That(saved.PostId, Is.EqualTo(5));
+        Assert.That(saved.Content, Is.EqualTo("Hello"));
     }
 
     [Test]
     public async Task CreateNewComment_AllowsMultipleCommentsSameUser()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         await _controller.CreateNewComment(new CommentDTO { PostId = 1, Content = "A" });
         await _controller.CreateNewComment(new CommentDTO { PostId = 1, Content = "B" });
 
-        Assert.AreEqual(2, _context.Comments.Count());
+        Assert.That(_context.Comments.Count(), Is.EqualTo(2));
     }
 
     [Test]
     public async Task CreateNewComment_AllowsDifferentUsersSamePost()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
         await _controller.CreateNewComment(new CommentDTO { PostId = 1, Content = "A" });
 
-        SetUser("user2");
+        TestHelper.SetUserClaims(_controller, "user2");
         await _controller.CreateNewComment(new CommentDTO { PostId = 1, Content = "B" });
 
-        Assert.AreEqual(2, _context.Comments.Count());
+        Assert.That(_context.Comments.Count(), Is.EqualTo(2));
     }
 
     [Test]
     public async Task CreateNewComment_LargeContent_Succeeds()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         var largeText = new string('X', 5000);
 
@@ -127,13 +122,13 @@ public class CommentControllerTests
             Content = largeText
         });
 
-        Assert.AreEqual(largeText, _context.Comments.First().Content);
+        Assert.That(_context.Comments.First().Content, Is.EqualTo(largeText));
     }
 
     [Test]
     public async Task CreateNewComment_LogsEvent()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         await _controller.CreateNewComment(new CommentDTO
         {
@@ -142,12 +137,7 @@ public class CommentControllerTests
         });
 
         _mockLogger.Verify(
-            x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            x => x.LogEvent(It.IsAny<string>()),
             Times.AtLeastOnce);
     }
 
@@ -163,8 +153,8 @@ public class CommentControllerTests
         var ok = result as OkObjectResult;
         var list = ok.Value as List<Comments>;
 
-        Assert.NotNull(list);
-        Assert.AreEqual(0, list.Count);
+        Assert.That(list, Is.Not.Null);
+        Assert.That(list.Count, Is.EqualTo(0));
     }
 
     [Test]
@@ -177,8 +167,8 @@ public class CommentControllerTests
 
         var list = ((OkObjectResult)result).Value as List<Comments>;
 
-        Assert.AreEqual(1, list.Count);
-        Assert.AreEqual("A", list.First().Content);
+        Assert.That(list.Count, Is.EqualTo(1));
+        Assert.That(list.First().Content, Is.EqualTo("A"));
     }
 
     [Test]
@@ -191,7 +181,7 @@ public class CommentControllerTests
 
         var list = ((OkObjectResult)result).Value as List<Comments>;
 
-        Assert.AreEqual(2, list.First().Id);
+        Assert.That(list.First().Id, Is.EqualTo(2));
     }
 
     [Test]
@@ -206,7 +196,7 @@ public class CommentControllerTests
 
         var dbValue = _context.Comments.First().Content;
 
-        Assert.AreNotEqual("Changed", dbValue);
+        Assert.That(dbValue, Is.Not.EqualTo("Changed"));
     }
 
     // =====================================================
@@ -218,17 +208,17 @@ public class CommentControllerTests
     {
         var result = _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "X" });
 
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
     public void UpdateComment_NotFound_ReturnsNotFound()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         var result = _controller.UpdateComment(999, new UpdatedCommentDTOs { Content = "X" });
 
-        Assert.IsInstanceOf<NotFoundResult>(result);
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
@@ -236,11 +226,11 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Old");
 
-        SetUser("intruder");
+        TestHelper.SetUserClaims(_controller, "intruder");
 
         var result = _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "Hack" });
 
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
@@ -248,15 +238,15 @@ public class CommentControllerTests
     {
         var original = SeedComment(1, "owner", 1, "Old");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "New" });
 
         var updated = _context.Comments.First();
 
-        Assert.AreEqual("New", updated.Content);
-        Assert.AreEqual(original.PostId, updated.PostId);
-        Assert.AreEqual(original.UserId, updated.UserId);
+        Assert.That(updated.Content, Is.EqualTo("New"));
+        Assert.That(updated.PostId, Is.EqualTo(original.PostId));
+        Assert.That(updated.UserId, Is.EqualTo(original.UserId));
     }
 
     [Test]
@@ -264,11 +254,11 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Old");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "New" });
 
-        Assert.AreEqual(1, _context.Comments.Count());
+        Assert.That(_context.Comments.Count(), Is.EqualTo(1));
     }
 
     [Test]
@@ -276,12 +266,12 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Old");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "Mid" });
         _controller.UpdateComment(1, new UpdatedCommentDTOs { Content = "Final" });
 
-        Assert.AreEqual("Final", _context.Comments.First().Content);
+        Assert.That(_context.Comments.First().Content, Is.EqualTo("Final"));
     }
 
     // =====================================================
@@ -293,17 +283,17 @@ public class CommentControllerTests
     {
         var result = await _controller.DeleteComment(1);
 
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
     public async Task DeleteComment_NotFound_ReturnsNotFound()
     {
-        SetUser("user1");
+        TestHelper.SetUserClaims(_controller, "user1");
 
         var result = await _controller.DeleteComment(999);
 
-        Assert.IsInstanceOf<NotFoundResult>(result);
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
@@ -311,11 +301,11 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Test");
 
-        SetUser("intruder");
+        TestHelper.SetUserClaims(_controller, "intruder");
 
         var result = await _controller.DeleteComment(1);
 
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]
@@ -324,12 +314,12 @@ public class CommentControllerTests
         SeedComment(1, "owner", 1, "Delete");
         SeedComment(2, "owner", 1, "Keep");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         await _controller.DeleteComment(1);
 
-        Assert.AreEqual(1, _context.Comments.Count());
-        Assert.AreEqual(2, _context.Comments.First().Id);
+        Assert.That(_context.Comments.Count(), Is.EqualTo(1));
+        Assert.That(_context.Comments.First().Id, Is.EqualTo(2));
     }
 
     [Test]
@@ -337,12 +327,12 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Delete");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         await _controller.DeleteComment(1);
         var second = await _controller.DeleteComment(1);
 
-        Assert.IsInstanceOf<NotFoundResult>(second);
+        Assert.That(second, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
@@ -350,17 +340,12 @@ public class CommentControllerTests
     {
         SeedComment(1, "owner", 1, "Delete");
 
-        SetUser("owner");
+        TestHelper.SetUserClaims(_controller, "owner");
 
         await _controller.DeleteComment(1);
 
         _mockLogger.Verify(
-            x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            x => x.LogEvent(It.IsAny<string>()),
             Times.AtLeastOnce);
     }
 }
