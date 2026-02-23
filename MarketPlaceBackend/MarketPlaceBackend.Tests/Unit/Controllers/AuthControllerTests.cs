@@ -35,9 +35,6 @@ public class AuthControllerTests
         );
     }
 
-    // ==========================================
-    //              REGISTER TESTS
-    // ==========================================
     [Test]
     public async Task Register_WithValidCredentials_ReturnsOk()
     {
@@ -137,11 +134,6 @@ public class AuthControllerTests
                 s.Contains("Failed registration attempt"))),
             Times.Once);
     }
-
-
-    // ==========================================
-    //              LOGIN TESTS
-    // ==========================================
 
     [Test]
     public async Task Login_WithValidCredentials_ReturnsOk()
@@ -290,10 +282,6 @@ public class AuthControllerTests
             Times.Once);
     }
 
-    // ==========================================
-    //              LOGOUT TESTS
-    // ==========================================
-
     [Test]
     public async Task Logout_WhenCalled_ReturnsOk()
     {
@@ -331,10 +319,6 @@ public class AuthControllerTests
                 s.Contains("logged out"))),
             Times.Once);
     }
-
-    // ==========================================
-    //              ME TESTS
-    // ==========================================
 
     [Test]
     public async Task Me_WhenUserExists_ReturnsOkWithUserInfo()
@@ -376,10 +360,6 @@ public class AuthControllerTests
 
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
-
-    // ==========================================
-    //           UPDATE EMAIL TESTS
-    // ==========================================
 
     [Test]
     public async Task UpdateEmail_WithValidRequest_ReturnsOk()
@@ -572,12 +552,8 @@ public class AuthControllerTests
             x => x.LogEvent(It.Is<string>(s =>
                 s.Contains("Failed email update"))),
             Times.Once);
-}
+    }
 
-
-    // ==========================================
-    //         UPDATE PASSWORD TESTS
-    // ==========================================
 
     [Test]
     public async Task UpdatePassword_WithValidRequest_ReturnsOk()

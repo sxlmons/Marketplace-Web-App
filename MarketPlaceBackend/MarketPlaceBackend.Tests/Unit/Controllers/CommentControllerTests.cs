@@ -55,10 +55,6 @@ public class CommentControllerTests
         _context.Dispose();
     }
 
-    // =====================================================
-    // CREATE COMMENT TESTS
-    // =====================================================
-
     [Test]
     public async Task CreateNewComment_UserNull_ReturnsBadRequest()
     {
@@ -141,10 +137,6 @@ public class CommentControllerTests
             Times.AtLeastOnce);
     }
 
-    // =====================================================
-    // GET COMMENTS TESTS
-    // =====================================================
-
     [Test]
     public void GetPostsComments_ReturnsEmpty_WhenNoneExist()
     {
@@ -198,10 +190,6 @@ public class CommentControllerTests
 
         Assert.That(dbValue, Is.Not.EqualTo("Changed"));
     }
-
-    // =====================================================
-    // UPDATE COMMENT TESTS
-    // =====================================================
 
     [Test]
     public void UpdateComment_UserNull_ReturnsBadRequest()
@@ -273,10 +261,6 @@ public class CommentControllerTests
 
         Assert.That(_context.Comments.First().Content, Is.EqualTo("Final"));
     }
-
-    // =====================================================
-    // DELETE COMMENT TESTS
-    // =====================================================
 
     [Test]
     public async Task DeleteComment_UserNull_ReturnsBadRequest()
