@@ -1,9 +1,9 @@
 ﻿using MarketPlaceBackend.Data;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 
 namespace MarketPlaceBackend.Tests.Helpers;
 
@@ -22,11 +22,17 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             foreach (var descriptor in descriptorsToRemove)
                 services.Remove(descriptor);
 
-            // Replace with in-memory database
+            // Replace with in-memory database (unique per factory)
+            var dbName = $"TestDb_{Guid.NewGuid()}";
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDb");
+                options.UseInMemoryDatabase(dbName);
             });
+
+            // Isolate Data Protection keys per factory instance
+            // so auth cookies don't bleed across test fixtures
+            services.AddDataProtection()
+                .SetApplicationName($"TestApp_{Guid.NewGuid()}");
         });
     }
 }

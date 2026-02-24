@@ -111,12 +111,22 @@ export default function EditPostPage() {
                 <div className="form-field">
                     <label>Title</label>
                     <input
-                        name="title"
                         type="text"
+                        name="title"
                         value={formData.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.length <= 100) {
+                                setFormData((prev) => ({ ...prev, title: value }));
+                                setError(""); // clear previous title error
+                            } else {
+                                setError("Title cannot exceed 100 characters");
+                            }
+                        }}
+                        maxLength={100} // enforces limit at HTML level
                         required
                     />
+                    <small>{formData.title.length}/100 characters</small>
                 </div>
 
                 <div className="form-field">
@@ -131,43 +141,43 @@ export default function EditPostPage() {
                 </div>
 
                 <div className="form-field">
-                    <label>Images (max 5)</label>
-                    <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                    />
+    <label>Images (max 5)</label>
+    <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={handleImageUpload}
+    />
 
-                    {formData.images.length > 0 && (
-                        <div className="image-previews-container">
-                            {formData.images.map((img, i) => (
-                                <div key={i} className="image-preview-wrapper">
-                                    <img
-                                        src={
-                                            img instanceof File
-                                                ? URL.createObjectURL(img)
-                                                : img
-                                        }
-                                        alt={`Preview ${i + 1}`}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="remove-image-button"
-                                        onClick={() => removeImage(i)}
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+    {formData.images.length > 0 && (
+        <div className="image-previews-row">
+            {formData.images.map((img, i) => (
+                <div key={i} className="image-preview-wrapper">
+                    <img
+                        src={
+                            img instanceof File
+                                ? URL.createObjectURL(img)
+                                : img
+                        }
+                        alt={`Preview ${i + 1}`}
+                    />
+                    <button
+                        type="button"
+                        className="remove-image-button"
+                        onClick={() => removeImage(i)}
+                    >
+                        &times;
+                    </button>
                 </div>
+            ))}
+        </div>
+    )}
+</div>
 
                 <div className="form-field" style={{ display: "flex", gap: "0.5rem" }}>
                     <button
                         type="submit"
-                        className="button"
+                        className="btn-primary"
                         disabled={saving}
                         style={{ flex: 1 }}
                     >
@@ -175,7 +185,7 @@ export default function EditPostPage() {
                     </button>
                     <button
                         type="button"
-                        className="button"
+                        className="btn-delete"
                         onClick={handleDelete}
                         style={{ flex: 1, backgroundColor: "var(--danger-color)" }}
                     >

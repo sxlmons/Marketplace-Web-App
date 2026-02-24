@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PostsAPI, CommentsAPI, AuthAPI } from "../services/api";
+import { PostsAPI, CommentsAPI, AuthAPI, ImagesAPI } from "../services/api";
+import Lightbox from "../components/LightBox";
 
-const API_BASE = "http://localhost:5289/api";
 
 export default function PostDetailsPage() {
     const { postId } = useParams();
@@ -18,7 +18,6 @@ export default function PostDetailsPage() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-
     useEffect(() => {
         let isMounted = true;
 
@@ -28,8 +27,15 @@ export default function PostDetailsPage() {
                 if (!isMounted) return;
 
                 const images = [];
+
                 for (let i = 1; i <= postData.photoCount; i++) {
-                    images.push(`${API_BASE}/image/GetPhotoForPost?postId=${postData.id}&imageId=${i}`);
+                    try {
+                        const blob = await ImagesAPI.getPhotoForPost(postData.id, i);
+                        const url = URL.createObjectURL(blob);
+                        images.push(url);
+                    } catch (err){
+                        setError(err.message);                       
+                    }
                 }
 
                 setPost({ ...postData, images });
@@ -50,6 +56,19 @@ export default function PostDetailsPage() {
 
         return () => { isMounted = false; };
     }, [postId]);
+
+    // Handle ESC key to cancel editing
+    useEffect(() => {
+        function handleKeyDown(e) {
+            if (e.key === "Escape" && editingCommentId !== null) {
+                setEditingCommentId(null);
+                setEditingText("");
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [editingCommentId]);
 
     async function handleDeletePost() {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -98,6 +117,14 @@ export default function PostDetailsPage() {
         }
     }
 
+    useEffect(() => {
+        return () => {
+            if (post?.images) {
+                post.images.forEach(url => URL.revokeObjectURL(url));
+            }
+        };
+    }, [post]);
+
     if (!post) return <p>Loading post...</p>;
 
     const isOwner = currentUserId === post.userId;
@@ -144,14 +171,19 @@ export default function PostDetailsPage() {
 
                         {isOwner && (
                             <div className="post-title-buttons">
-                                <button onClick={() => navigate(`/post/${post.id}/edit`)}>Edit</button>
-                                <button className="delete-button" onClick={handleDeletePost}>Delete</button>
+                                <button className="btn-primary" onClick={() => navigate(`/post/${post.id}/edit`)}>
+                                    Edit
+                                </button>
+                                <button className="btn-delete" onClick={handleDeletePost}>
+                                    Delete
+                                </button>
                             </div>
                         )}
                     </div>
 
                     <p className="post-description">{post.description}</p>
                 </section>
+
                 <section className="comments-section">
                     <h2>Comments</h2>
                     <form onSubmit={handleAddComment} className="comment-form">
@@ -161,38 +193,54 @@ export default function PostDetailsPage() {
                             placeholder="Leave a comment..."
                             rows={1}
                         />
-                        <button className="button">Post Comment</button>
+                        <button className="btn-primary">Post Comment</button>
                     </form>
 
                     {comments.map((comment) => {
                         const isCommentOwner = comment.userId === currentUserId;
                         return (
                             <div key={comment.id} className="comment">
+                                {editingCommentId === comment.id && (
+                                    <div className="comment-actions" style={{ marginBottom: "0.5rem" }}>
+                                        <button
+                                            onClick={() => handleEditComment(comment.id)}
+                                            className="icon-button btn-primary"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            onClick={() => { setEditingCommentId(null); setEditingText(""); }}
+                                            className="icon-button btn-secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                )}
+
                                 {isCommentOwner && editingCommentId !== comment.id && (
                                     <div className="comment-top-right">
                                         <button
                                             onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.content); }}
-                                            className="icon-button"
+                                            className="icon-button btn-primary"
                                             title="Edit Comment"
-                                        >✏️</button>
+                                        >
+                                            Edit
+                                        </button>
                                         <button
                                             onClick={() => handleDeleteComment(comment.id)}
-                                            className="icon-button delete"
+                                            className="icon-button btn-delete"
                                             title="Delete Comment"
-                                        >❌</button>
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 )}
+
                                 {editingCommentId === comment.id ? (
-                                    <>
-                                        <textarea
-                                            value={editingText}
-                                            onChange={(e) => setEditingText(e.target.value)}
-                                        />
-                                        <div className="comment-actions">
-                                            <button onClick={() => handleEditComment(comment.id)} className="icon-button">💾</button>
-                                            <button onClick={() => { setEditingCommentId(null); setEditingText(""); }} className="icon-button">❌</button>
-                                        </div>
-                                    </>
+                                    <textarea
+                                        value={editingText}
+                                        onChange={(e) => setEditingText(e.target.value)}
+                                    />
                                 ) : (
                                     <p>{comment.content}</p>
                                 )}
@@ -201,41 +249,21 @@ export default function PostDetailsPage() {
                     })}
                 </section>
             </div>
+
             {selectedImage && (
-                <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
-                    <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="image-modal-close"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            ✕
-                        </button>
-                        <button
-                            className="image-modal-nav left"
-                            onClick={() =>
-                                setCurrentImageIndex((prev) =>
-                                    prev === 0 ? post.images.length - 1 : prev - 1
-                                )
-                            }
-                        >
-                            &lt;
-                        </button>
-                        <button
-                            className="image-modal-nav right"
-                            onClick={() =>
-                                setCurrentImageIndex((prev) =>
-                                    prev === post.images.length - 1 ? 0 : prev + 1
-                                )
-                            }
-                        >
-                            &gt;
-                        </button>
-
-                        <img src={post.images[currentImageIndex]} alt={`Image ${currentImageIndex + 1}`} />
-                    </div>
-                </div>
+                <Lightbox
+                    images={post.images}
+                    currentIndex={currentImageIndex}
+                    onClose={() => setSelectedImage(null)}
+                    onNavigate={(newIndex) => {
+                        setCurrentImageIndex(newIndex);
+                        setSelectedImage(post.images[newIndex]);
+                    }}
+                    navClassName="image-modal-nav"
+                    overlayClassName="image-modal-overlay"
+                    closeClassName="image-modal-close"
+                />
             )}
-
         </main>
     );
 }

@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5289/api";
+const API_BASE = "/api";
 
 async function handleResponse(res) {
     if (!res.ok) {
@@ -177,5 +177,37 @@ export const CommentsAPI = {
             }
         );
         return handleResponse(res);
+    },
+};
+
+export const ImagesAPI = {
+    getThumbnail: async (postId) => {
+        const res = await fetch(
+            `${API_BASE}/Image/GetSingleThumbNail?postId=${postId}`,
+            {
+                method: "GET",
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch thumbnail");
+        }
+
+        return res.blob(); // image response
+    },
+
+    getPhotoForPost: async (postId, imageId) => {
+        const res = await fetch(
+            `${API_BASE}/Image/GetPhotoForPost?postId=${postId}&imageId=${imageId}`,
+            {
+                method: "GET",
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch image");
+        }
+
+        return res.blob();
     },
 };
