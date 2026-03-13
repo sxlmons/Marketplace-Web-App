@@ -1,0 +1,16 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/zod/src/v4/mini"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_7e67383ea3eb1fbc764cb2cef33834bb {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="v4", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_7e67383ea3eb1fbc764cb2cef33834bb.html",tooltip=""]
+  subgraph clusterdir_8ee657d08cc42c187594b87bde6b2319 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_8ee657d08cc42c187594b87bde6b2319.html",tooltip=""]
+    dir_8ee657d08cc42c187594b87bde6b2319 [shape=plaintext, label="mini"];
+  dir_cfac5f491d4d227cb65df698b71d92f3 [label="tests", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_cfac5f491d4d227cb65df698b71d92f3.html",tooltip=""];
+  }
+  }
+}

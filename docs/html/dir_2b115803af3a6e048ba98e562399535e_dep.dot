@@ -1,0 +1,16 @@
+digraph "MarketPlaceFrontend/marketplacefrontend/node_modules/@babel/helper-compilation-targets"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_54c5e0a3c2292b974fae36ab43052ca7 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", label="@babel", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_54c5e0a3c2292b974fae36ab43052ca7.html",tooltip=""]
+  subgraph clusterdir_2b115803af3a6e048ba98e562399535e {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_2b115803af3a6e048ba98e562399535e.html",tooltip=""]
+    dir_2b115803af3a6e048ba98e562399535e [shape=plaintext, label="helper-compilation\l-targets"];
+  dir_6eb9e43792c2c150be1d13aa48782711 [label="lib", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_6eb9e43792c2c150be1d13aa48782711.html",tooltip=""];
+  }
+  }
+}

@@ -1,0 +1,22 @@
+digraph "MarketPlaceBackend/MarketPlaceBackend"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  compound=true
+  subgraph clusterdir_ef456ac86d5c5cc51d1c194cc5f57d20 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="MarketPlaceBackend", fontname=Helvetica,fontsize=10 style="filled,dashed", URL="dir_ef456ac86d5c5cc51d1c194cc5f57d20.html",tooltip=""]
+  subgraph clusterdir_fff4e7283f03546e0a336fd3f98cbb50 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", label="", fontname=Helvetica,fontsize=10 style="filled,bold", URL="dir_fff4e7283f03546e0a336fd3f98cbb50.html",tooltip=""]
+    dir_fff4e7283f03546e0a336fd3f98cbb50 [shape=plaintext, label="MarketPlaceBackend"];
+  dir_7a0ffcb870d51c9f60869ad3baa0c693 [label="Controllers", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_7a0ffcb870d51c9f60869ad3baa0c693.html",tooltip=""];
+  dir_4315af14098425a7233320493617d9a2 [label="Data", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_4315af14098425a7233320493617d9a2.html",tooltip=""];
+  dir_2934a8ad4b6602424d25ba6ca054c493 [label="DTOs", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_2934a8ad4b6602424d25ba6ca054c493.html",tooltip=""];
+  dir_d1f13f2adc3d39cc7f466cdfcc7a890c [label="Migrations", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_d1f13f2adc3d39cc7f466cdfcc7a890c.html",tooltip=""];
+  dir_79c20163901d1b918751d5b7445dbdfc [label="Models", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_79c20163901d1b918751d5b7445dbdfc.html",tooltip=""];
+  dir_6af3d668f76e70094ab72248c0f822a7 [label="obj", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_6af3d668f76e70094ab72248c0f822a7.html",tooltip=""];
+  dir_9943c17199e723a4a14077fd86285d57 [label="Tools", fillcolor="#a2b4d6", color="grey25", style="filled", URL="dir_9943c17199e723a4a14077fd86285d57.html",tooltip=""];
+  }
+  }
+}

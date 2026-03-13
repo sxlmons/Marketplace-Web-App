@@ -141,38 +141,38 @@ export default function EditPostPage() {
                 </div>
 
                 <div className="form-field">
-                    <label>Images (max 5)</label>
-                    <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                    />
+    <label>Images (max 5)</label>
+    <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={handleImageUpload}
+    />
 
-                    {formData.images.length > 0 && (
-                        <div className="image-previews-container">
-                            {formData.images.map((img, i) => (
-                                <div key={i} className="image-preview-wrapper">
-                                    <img
-                                        src={
-                                            img instanceof File
-                                                ? URL.createObjectURL(img)
-                                                : img
-                                        }
-                                        alt={`Preview ${i + 1}`}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="remove-image-button"
-                                        onClick={() => removeImage(i)}
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+    {formData.images.length > 0 && (
+        <div className="image-previews-row">
+            {formData.images.map((img, i) => (
+                <div key={i} className="image-preview-wrapper">
+                    <img
+                        src={
+                            img instanceof File
+                                ? URL.createObjectURL(img)
+                                : img
+                        }
+                        alt={`Preview ${i + 1}`}
+                    />
+                    <button
+                        type="button"
+                        className="remove-image-button"
+                        onClick={() => removeImage(i)}
+                    >
+                        &times;
+                    </button>
                 </div>
+            ))}
+        </div>
+    )}
+</div>
 
                 <div className="form-field" style={{ display: "flex", gap: "0.5rem" }}>
                     <button

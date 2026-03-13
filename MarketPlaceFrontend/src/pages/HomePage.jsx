@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PostsAPI } from "../services/api";
+import { PostsAPI, ImagesAPI } from "../services/api";
 
 const PAGE_SIZE = 10;
 
@@ -25,21 +25,23 @@ export default function HomePage() {
                 const data = await PostsAPI.getLatestPosts(limit);
 
                 if (!cancelled) {
-                    const postsWithImages = data.map(post => {
-                        const images = [];
-                        for (let i = 1; i <= post.photoCount; i++) {
-                            images.push(`${API_BASE}/Image/GetPhotoForPost?postId=${post.id}&imageId=${i}`);
-                        }
-                        return { ...post, images };
-                    });
+                    const postsWithImages = await Promise.all(
+                        data.map(async (post) => {
+                            try {
+                                const blob = await ImagesAPI.getThumbnail(post.id);
+                                const imageUrl = URL.createObjectURL(blob);
+                                return { ...post, thumbnail: imageUrl };
+                            } catch {
+                                return { ...post, thumbnail: null };
+                            }
+                        })
+                    );
 
                     setPosts(prevPosts => {
-                        // Only add posts we haven't already loaded
                         const newPosts = postsWithImages.filter(
                             p => !prevPosts.some(existing => existing.id === p.id)
                         );
 
-                        // Stop infinite scroll if we got less than PAGE_SIZE new posts
                         if (newPosts.length < PAGE_SIZE) setHasMore(false);
 
                         return [...prevPosts, ...newPosts];
@@ -66,13 +68,23 @@ export default function HomePage() {
                 !loading &&
                 hasMore
             ) {
-                setLimit(prev => prev + PAGE_SIZE); // Load next "page"
+                setLimit(prev => prev + PAGE_SIZE);
             }
         }
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [loading, hasMore]);
+
+    useEffect(() => {
+        return () => {
+            posts.forEach((post) => {
+                if (post.thumbnail) {
+                    URL.revokeObjectURL(post.thumbnail);
+                }
+            });
+        };
+    }, [posts]);
 
     return (
         <main className="container">
@@ -82,13 +94,18 @@ export default function HomePage() {
                     className="post-card"
                     onClick={() => navigate(`/post/${post.id}`)}
                 >
-                    {post.images?.length > 0 && (
+                    {post.thumbnail && (
                         <img
-                            src={post.images[0]}
-                            alt={`Post ${post.id} hero`}
+                            src={post.thumbnail}
+                            alt={`Post ${post.id} thumbnail`}
+                            loading="lazy"
                             className="post-hero-image"
+                            onError={(e) => {
+                                e.target.style.display = "none";
+                            }}
                         />
                     )}
+
                     <div className="post-title">{post.title}</div>
                     <div className="post-description">{post.description}</div>
                 </div>

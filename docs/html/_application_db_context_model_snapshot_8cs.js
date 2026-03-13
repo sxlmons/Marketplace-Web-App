@@ -1,0 +1,4 @@
+var _application_db_context_model_snapshot_8cs =
+[
+    [ "MarketPlaceBackend.Migrations.ApplicationDbContextModelSnapshot", "class_market_place_backend_1_1_migrations_1_1_application_db_context_model_snapshot.html", "class_market_place_backend_1_1_migrations_1_1_application_db_context_model_snapshot" ]
+];

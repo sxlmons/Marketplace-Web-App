@@ -53,10 +53,6 @@ public class PostControllerTests
         _db.Dispose();
     }
 
-    // ==========================================
-    //  HELPER: Creates a fake IFormFile for tests
-    //  that involve image uploads.
-    // ==========================================
     private static IFormFile CreateMockFile(string fileName = "test.jpg")
     {
         var content = "fake image content"u8.ToArray();
@@ -67,10 +63,6 @@ public class PostControllerTests
             ContentType = "image/jpeg"
         };
     }
-
-    // ==========================================
-    //        CREATE NEW POST TESTS
-    // ==========================================
 
     [Test]
     public async Task CreateNewPost_WithValidData_ReturnsOkWithPostId()
@@ -194,10 +186,6 @@ public class PostControllerTests
         Assert.That(savedPost.PhotoCount, Is.EqualTo(3));
     }
 
-    // ==========================================
-    //    GET LATEST POSTS WITH LIMIT TESTS
-    // ==========================================
-
     [Test]
     public async Task GetLatestPostsWithLimit_ReturnsOkWithPosts()
     {
@@ -255,10 +243,6 @@ public class PostControllerTests
         Assert.That(posts, Is.Empty);
     }
 
-    // ==========================================
-    //       GET SINGLE POST INFO TESTS
-    // ==========================================
-
     [Test]
     public async Task GetSinglePostInfo_WhenPostExists_ReturnsOkWithPost()
     {
@@ -294,10 +278,6 @@ public class PostControllerTests
         // Assert
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
-
-    // ==========================================
-    //          DELETE POST TESTS
-    // ==========================================
 
     [Test]
     public async Task DeletePost_WhenOwnerDeletes_ReturnsOk()
@@ -396,10 +376,6 @@ public class PostControllerTests
                 s.Contains("deleted Post"))),
             Times.Once);
     }
-
-    // ==========================================
-    //          UPDATE POST TESTS
-    // ==========================================
 
     [Test]
     public async Task UpdatePost_WithValidData_ReturnsOk()

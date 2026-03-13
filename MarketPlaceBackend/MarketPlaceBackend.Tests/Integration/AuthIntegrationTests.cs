@@ -6,6 +6,7 @@ using MarketPlaceBackend.Tests.Helpers;
 namespace MarketPlaceBackend.Tests.Integration;
 
 [TestFixture]
+[NonParallelizable]
 public class AuthIntegrationTests
 {
     private TestWebApplicationFactory _factory;
