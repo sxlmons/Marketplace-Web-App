@@ -136,6 +136,9 @@ public class PostController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdatePost(int postId, [FromForm] UpdatedPostDTO updatedPostDto, [FromForm] List<IFormFile>? images)
     {
+        if (images.Count > 5)
+            return BadRequest("Max 5 Images Allowed");
+        
         // Grab userId from cookie
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -150,46 +153,45 @@ public class PostController : ControllerBase
         post.Title = updatedPostDto.Title;
         post.Description = updatedPostDto.Description;
         post.UpdatedAt = DateTime.UtcNow;
+        post.PhotoCount = images.Count;
+        
+        await _db.SaveChangesAsync();
         
         if (images != null && images.Count > 0)
         {
-            if (images.Count > 10)
-                return BadRequest("Max 10 Images Allowed");
-
-            var imageDir = Path.Combine(
-                _imageStorage,
-                post.UserId.ToString(),
-                post.Id.ToString()
-            );
-
-            // Delete existing images
-            if (Directory.Exists(imageDir))
-                Directory.Delete(imageDir, recursive: true);
-
-            Directory.CreateDirectory(imageDir);
-
-            for (int i = 0; i < images.Count; i++)
+            Task.Run(() =>
             {
-                var file = images[i];
-                var extension = Path.GetExtension(file.FileName);
-                var filePath = Path.Combine(imageDir, $"{i + 1}{extension}");
-
-                await using var stream = new FileStream(
-                    filePath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    bufferSize: 81920,
-                    useAsync: true
+                var imageDir = Path.Combine(
+                    _imageStorage,
+                    post.UserId,
+                    post.Id.ToString()
                 );
 
-                await file.CopyToAsync(stream);
-            }
+                // Delete existing images
+                if (Directory.Exists(imageDir))
+                    Directory.Delete(imageDir, recursive: true);
 
-            post.PhotoCount = images.Count;
+                Directory.CreateDirectory(imageDir);
+
+                for (int i = 0; i < images.Count; i++)
+                {
+                    var file = images[i];
+                    var extension = Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(imageDir, $"{i + 1}{extension}");
+
+                    using var stream = new FileStream(
+                        filePath,
+                        FileMode.Create,
+                        FileAccess.Write,
+                        FileShare.None,
+                        bufferSize: 81920,
+                        useAsync: true
+                    );
+
+                    file.CopyTo(stream);
+                }
+            });
         }
-
-        await _db.SaveChangesAsync();
 
         _logger.LogEvent($"User {post.UserId} updated Post {post.Id}");
 
